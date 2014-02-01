@@ -28,9 +28,9 @@ Configuration
 =============
 
 Configuration items are still subject to change at this point, but
-basically you have to provide a list of feed URLs for your Podcasts,
-which will then show up under "Podcasts" -- or whatever you set
-"browse_label" to -- when browsing::
+basically you have to provide a list of feed URLs for your favorite 
+Podcasts, which will then show up under "Podcasts" -- or whatever you
+set "browse_label" to -- when browsing::
 
   [podcast]
   enabled = true
