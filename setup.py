@@ -11,9 +11,9 @@ def get_version(filename):
 
 
 setup(
-    name='Mopidy-Podcasts',
-    version=get_version('mopidy_podcasts/__init__.py'),
-    url='https://github.com/tkem/mopidy-podcasts',
+    name='Mopidy-Podcast',
+    version=get_version('mopidy_podcast/__init__.py'),
+    url='https://github.com/tkem/mopidy-podcast',
     license='Apache License, Version 2.0',
     author='Thomas Kemmer',
     author_email='tkemmer@computer.org',
@@ -26,6 +26,7 @@ setup(
         'setuptools',
         'Mopidy >= 0.18',
         'Pykka >= 1.1',
+        'feedparser >= 5.1',
     ],
     test_suite='nose.collector',
     tests_require=[
@@ -34,7 +35,7 @@ setup(
     ],
     entry_points={
         'mopidy.ext': [
-            'podcasts = mopidy_podcasts:Extension',
+            'podcast = mopidy_podcast:Extension',
         ],
     },
     classifiers=[
