@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+%:
+	dh $@ --with python2
+
+override_dh_auto_build:
+
+override_dh_auto_install:
+	python setup.py install --root=debian/tmp --install-layout=deb --install-lib=/usr/share/mopidy --install-scripts=/usr/share/mopidy
+
+override_dh_python2:
+	dh_python2
+	dh_python2 usr/share/mopidy

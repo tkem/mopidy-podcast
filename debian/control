@@ -1,0 +1,19 @@
+Source: mopidy-podcast
+Section: sound
+Priority: optional
+Maintainer: Thomas Kemmer <tkemmer@computer.org>
+Build-Depends: debhelper (>= 8.0.0), python (>= 2.7), python-setuptools
+Standards-Version: 3.9.5
+Homepage: http://github.com/tkem/mopidy-podcast
+Vcs-Git: git://github.com/tkem/mopidy-podcast.git
+Vcs-Browser: https://github.com/tkem/mopidy-podcast
+X-Python-Version: >= 2.7
+
+Package: mopidy-podcast
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Description: Mopidy extension for streaming Podcasts
+ Mopidy is a music server which can play music from multiple sources, like your
+ local hard drive, radio streams, and from Spotify and SoundCloud.
+ .
+ This package provides a Mopidy extension for streaming Podcasts.
