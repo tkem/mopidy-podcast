@@ -40,13 +40,22 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         logger.debug("podcast lookup: %s", uri)
 
         uriparts = urisplit(uri)
-        feed = self.getfeed(uriparts.getauthority())
-        if feed:
-            guid = uriparts.getpath().lstrip('/')
+        feeduri = uriparts.getauthority()
+        feed = self.getfeed(feeduri)
+        guid = uriparts.getpath().lstrip('/')
+        # FIXME: temporary workaround for MPoD timeout
+        if 'tracks' not in feed:
+            logger.debug("podcast %s: building track cache", feeduri)
+            feed['tracks'] = {}
             for index, item in enumerate(reversed(feed.entries)):
-                if item.guid == guid:
-                    return [item_to_track(feed, item, index)]
-        logger.debug("podcast lookup failed: %s [%s]", uri, guid)
+                feed['tracks'][item.guid] = item_to_track(feed, item, index)
+        else:
+            logger.debug("podcast %s: using track cache", feeduri)
+
+        logger.debug("podcast %s: tracks = %r", feeduri, feed['tracks'])
+        if guid in feed['tracks']:
+            return [feed['tracks'][guid]]
+        logger.debug("podcast lookup failed: %s [%s]", feeduri, guid)
         return []
 
     def search(self, query=None, uris=None):
@@ -96,8 +105,8 @@ class PodcastLibraryProvider(backend.LibraryProvider):
     def _browse_feed(self, url):
         logger.debug("podcast browse feed: %s", url)
         feed = self.getfeed(url, True)
-        refs = []
 
+        refs = []
         for item in feed.entries:
             refs.append(item_to_ref(feed, item))
         return refs
