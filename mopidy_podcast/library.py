@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 import logging
 
+import feedparser
+
 from mopidy import backend
 #from mopidy.models import SearchResult, Ref
 
@@ -11,13 +13,15 @@ from mopidy import backend
 logger = logging.getLogger(__name__)
 
 
-class PocastLibraryProvider(backend.LibraryProvider):
+class PodcastLibraryProvider(backend.LibraryProvider):
 
     def __init__(self, backend):
         super(PodcastLibraryProvider, self).__init__(backend)
+        urls = self.getconfig('feed_urls')
+        self.feeds = [feedparser.parse(url) for url in urls]
 
     def browse(self, uri):
-        logger.debug("podcats browse: %s", uri)
+        logger.debug("podcast browse: %s", uri)
         return []
 
     def lookup(self, uri):
