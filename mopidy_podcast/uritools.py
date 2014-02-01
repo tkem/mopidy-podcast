@@ -6,9 +6,9 @@ unusable with custom (private) URI schemes.
 
 from __future__ import unicode_literals
 
+import collections
 import re
-
-from collections import namedtuple
+import urllib
 
 URI_RE = re.compile(r"""
 (?:([^:/?#]+):)?  # scheme
@@ -21,9 +21,22 @@ URI_RE = re.compile(r"""
 URI_FIELDS = ('scheme', 'authority', 'path', 'query', 'fragment')
 
 
-class SplitResult(namedtuple('SplitResult', URI_FIELDS)):
+class SplitResult(collections.namedtuple('SplitResult', URI_FIELDS)):
 
-    # TODO: getuserinfo(), gethost(), getport()
+    def getscheme(self):
+        return urllib.unquote(self.scheme)
+
+    def getauthority(self):
+        return urllib.unquote(self.authority)
+
+    def getpath(self):
+        return urllib.unquote(self.path)
+
+    def getquery(self):
+        return urllib.unquote(self.query)
+
+    def getfragment(self):
+        return urllib.unquote(self.fragment)
 
     def geturi(self):
         return uriunsplit(self)
@@ -51,11 +64,11 @@ def uriunsplit(data):
             uri = '//' + authority + path
         else:
             uri = '//' + authority + '/' + path
-    elif path.startswith('/'):
+    elif path.startswith('//'):
         # RFC 3986 3.3: If a URI does not contain an authority
         # component, then the path cannot begin with two slash
         # characters ("//").
-        uri = '/' + path.lstrip('/')
+        raise ValueError('invalid uri path: %s' % path)
     else:
         uri = path
     if scheme:
@@ -68,4 +81,10 @@ def uriunsplit(data):
 
 
 def uricompose(scheme='', authority='', path='', query='', fragment=''):
+    # TODO: check quoting
+    scheme = urllib.quote(scheme, '')
+    authority = urllib.quote(authority, ':')
+    path = urllib.quote(path, ':/')
+    query = urllib.quote(query, ':/?')
+    fragment = urllib.quote(fragment, ':/?#')
     return uriunsplit((scheme, authority, path, query, fragment))

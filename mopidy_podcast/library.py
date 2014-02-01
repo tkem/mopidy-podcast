@@ -5,10 +5,10 @@ import logging
 import feedparser
 
 from mopidy import backend
-#from mopidy.models import SearchResult, Ref
+from mopidy.models import SearchResult, Ref
 
-#from .translators import item_to_tracks, file_to_ref, doc_to_ref, doc_to_album
-#from .uritools import uricompose, urisplit
+from .translators import feed_to_ref, item_to_ref, item_to_track
+from .uritools import uricompose, urisplit
 
 logger = logging.getLogger(__name__)
 
@@ -17,15 +17,32 @@ class PodcastLibraryProvider(backend.LibraryProvider):
 
     def __init__(self, backend):
         super(PodcastLibraryProvider, self).__init__(backend)
-        urls = self.getconfig('feed_urls')
-        self.feeds = [feedparser.parse(url) for url in urls]
+        self.feeds = {url: None for url in self.getconfig('feed_urls')}
+        self.root_directory = Ref.directory(
+            uri='%s:/' % self.backend.URI_SCHEME,
+            name=self.getconfig('browse_label'))
 
     def browse(self, uri):
         logger.debug("podcast browse: %s", uri)
-        return []
+
+        if not uri:
+            return [self.root_directory]
+        elif uri == self.root_directory.uri:
+            return self._browse_root()
+        else:
+            return self._browse_feed(urisplit(uri).getauthority())
 
     def lookup(self, uri):
         logger.debug("podcast lookup: %s", uri)
+
+        uriparts = urisplit(uri)
+        feed = self.getfeed(uriparts.getauthority())
+        if feed:
+            guid = uriparts.getpath().lstrip('/')
+            for index, item in enumerate(reversed(feed.entries)):
+                if item.guid == guid:
+                    return [item_to_track(feed, item, index)]
+        logger.debug("podcast lookup failed: %s [%s]", uri, guid)
         return []
 
     def search(self, query=None, uris=None):
@@ -34,3 +51,42 @@ class PodcastLibraryProvider(backend.LibraryProvider):
 
     def getconfig(self, name):
         return self.backend.getconfig(name)
+
+    def getfeed(self, url, update=False):
+        logger.debug("getting podcast %s", url)
+        feed = self.feeds[url]
+
+        if not feed:
+            logger.debug("loading podcast %s", url)
+            feed = self.feeds[url] = feedparser.parse(url)
+        elif update:
+            if feed.etag:
+                logger.debug("podcast %s: checking etag", url)
+                newfeed = feedparser.parse(url, etag=feed.etag)
+            elif feed.modified:
+                logger.debug("podcast %s: checking modified", url)
+                newfeed = feedparser.parse(url, modified=feed.modified)
+            else:
+                newfeed = feedparser.parse(url)
+            if newfeed.feed:
+                logger.debug("updating podcast %s", url)
+                feed = newfeed
+            else:
+                logger.debug("unchanged podcast %s", url)
+        return feed
+
+    def _browse_root(self):
+        refs = []
+        for url in self.feeds:
+            feed = self.getfeed(url)
+            refs.append(feed_to_ref(feed, Ref.DIRECTORY))
+        return refs
+
+    def _browse_feed(self, url):
+        logger.debug("podcast browse feed: %s", url)
+        feed = self.getfeed(url, True)
+        refs = []
+
+        for item in feed.entries:
+            refs.append(item_to_ref(feed, item))
+        return refs
