@@ -21,7 +21,7 @@ Install by running::
     pip install Mopidy-Podcast
 
 Or manually install Debian/Ubuntu packages for Mopidy-Podcast
-`releases <https://github.com/tkem/mopidy-internetarchive/releases>`_.
+`releases <https://github.com/tkem/mopidy-podcast/releases>`_.
 
 
 Configuration
