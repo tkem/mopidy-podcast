@@ -20,18 +20,37 @@ Install by running::
 
     pip install Mopidy-Podcast
 
-Or, if available, install the Debian/Ubuntu package from `apt.mopidy.com
-<http://apt.mopidy.com/>`_.
+Or manually install Debian/Ubuntu packages for Mopidy-Podcast
+`releases <https://github.com/tkem/mopidy-internetarchive/releases>`_.
 
 
 Configuration
 =============
 
-Before starting Mopidy, you must add configuration for
-Mopidy-Podcast to your Mopidy configuration file::
+Configuration items are still subject to change at this point, but
+basically you have to provide a list of feed URLs for your Podcasts,
+which will then show up under "Podcasts" -- or whatever you set
+"browse_label" to -- when browsing::
 
-    [podcast]
-    # TODO: Add example of extension config
+  [podcast]
+  enabled = true
+
+  # links to podcast RSS feeds; examples from npr.org
+  feed_urls =
+      http://www.npr.org/rss/podcast.php?id=510019
+      http://www.npr.org/rss/podcast.php?id=510253
+      http://www.npr.org/rss/podcast.php?id=510306
+
+  # top-level name for browsing
+  browse_label = Podcasts
+
+  # preload podcasts on startup
+  preload = true
+
+
+Configured Podcasts will be regularly updated for new episodes
+(details TBD).
+
 
 
 Project resources
