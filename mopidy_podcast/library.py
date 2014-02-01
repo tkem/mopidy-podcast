@@ -37,7 +37,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             return self._browse_feed(urisplit(uri).getauthority())
 
     def lookup(self, uri):
-        logger.debug("podcast lookup: %s", uri)
+        #logger.debug("podcast lookup: %s", uri)
 
         uriparts = urisplit(uri)
         feeduri = uriparts.getauthority()
@@ -49,10 +49,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             feed['tracks'] = {}
             for index, item in enumerate(reversed(feed.entries)):
                 feed['tracks'][item.guid] = item_to_track(feed, item, index)
-        else:
-            logger.debug("podcast %s: using track cache", feeduri)
-
-        logger.debug("podcast %s: tracks = %r", feeduri, feed['tracks'])
         if guid in feed['tracks']:
             return [feed['tracks'][guid]]
         logger.debug("podcast lookup failed: %s [%s]", feeduri, guid)
@@ -66,7 +62,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         return self.backend.getconfig(name)
 
     def getfeed(self, url, update=False):
-        logger.debug("getting podcast %s", url)
+        #logger.debug("getting podcast %s", url)
         feed = self.feeds[url]
 
         # FIXME: etag/modified not working as expected?
@@ -91,8 +87,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 feed['downloaded'] = time.time()
             else:
                 logger.debug("unchanged podcast %s", url)
-        else:
-            logger.debug("cached podcast %s", url)
         return feed
 
     def _browse_root(self):
