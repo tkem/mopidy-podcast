@@ -11,7 +11,8 @@ class LibraryTest(unittest.TestCase):
     config = {
         'podcast': {
             'feed_urls': ['http://www.npr.org/rss/podcast.php?id=510019'],
-            'browse_label': 'Podcasts'
+            'browse_label': 'Podcasts',
+            'preload': False
         }
     }
 

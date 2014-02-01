@@ -20,6 +20,7 @@ class Extension(ext.Extension):
         schema = super(Extension, self).get_config_schema()
         schema['feed_urls'] = config.List()
         schema['browse_label'] = config.String()
+        schema['preload'] = config.Boolean()
         return schema
 
     def setup(self, registry):

@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import logging
+import time
 
 import feedparser
 
@@ -21,6 +22,9 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         self.root_directory = Ref.directory(
             uri='%s:/' % self.backend.URI_SCHEME,
             name=self.getconfig('browse_label'))
+        if self.getconfig('preload'):
+            for url in self.feeds:
+                self.feeds[url] = self.getfeed(url)
 
     def browse(self, uri):
         logger.debug("podcast browse: %s", uri)
@@ -56,10 +60,13 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         logger.debug("getting podcast %s", url)
         feed = self.feeds[url]
 
+        # FIXME: etag/modified not working as expected?
         if not feed:
             logger.debug("loading podcast %s", url)
             feed = self.feeds[url] = feedparser.parse(url)
-        elif update:
+            feed['downloaded'] = time.time()
+        elif update and feed['downloaded'] < time.time() - 3600:
+            logger.debug("updating podcast %s", url)
             if feed.etag:
                 logger.debug("podcast %s: checking etag", url)
                 newfeed = feedparser.parse(url, etag=feed.etag)
@@ -68,11 +75,15 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 newfeed = feedparser.parse(url, modified=feed.modified)
             else:
                 newfeed = feedparser.parse(url)
+
             if newfeed.feed:
-                logger.debug("updating podcast %s", url)
+                logger.debug("updated podcast %s", url)
                 feed = newfeed
+                feed['downloaded'] = time.time()
             else:
                 logger.debug("unchanged podcast %s", url)
+        else:
+            logger.debug("cached podcast %s", url)
         return feed
 
     def _browse_root(self):
