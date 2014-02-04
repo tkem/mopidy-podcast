@@ -24,6 +24,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         if self.getconfig('preload'):
             for url in self.podcasts:
                 self.podcasts[url] = self.getpodcast(url)
+        logger.info("Loaded %d podcasts", len(self.podcasts))
 
     def browse(self, uri):
         logger.debug("browse podcasts: %s", uri)
