@@ -94,6 +94,8 @@ class Query(collections.Mapping):
         def __int__(self):
             return int(self.__value)
 
+        __hash__ = None
+
     def __init__(self, query, exact=False):
         self.__query = {}
         for field, values in query.iteritems():
