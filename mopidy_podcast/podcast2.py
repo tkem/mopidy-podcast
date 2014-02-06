@@ -1,18 +1,13 @@
+"""
+Podcast implementation according to
+https://www.apple.com/itunes/podcasts/specs.html
+"""
 from __future__ import unicode_literals
 
+import collections
 import datetime
 import logging
 import re
-
-# import xml.etree.ElementTree as ET
-
-#ET.register_namespace('itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd')
-
-#print ET._namespace_map
-
-#from mopidy.models import Album, Artist, Track, Ref
-
-#from .uritools import uricompose
 
 DURATION_RE = re.compile(r"""
 (?:
@@ -22,182 +17,169 @@ DURATION_RE = re.compile(r"""
 (?P<seconds>\d+)
 """, flags=re.VERBOSE)
 
-XMLNS = dict(itunes='http://www.itunes.com/dtds/podcast-1.0.dtd')
+NAMESPACES = {
+    'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'
+}
 
 logger = logging.getLogger(__name__)
 
 
-def _settagattr(obj, elem, tag, attr=None, convert=None, default=None):
-    if ':' in tag:
-        e = elem.find(tag, namespaces=XMLNS)
-    else:
-        e = elem.find(tag)
-
+def _settagattr(self, name, item, tag, default=None, convert=None,
+                namespaces=None):
+    e = item.find(tag, namespaces=namespaces)
     if e is None:
-        setattr(obj, attr or tag, default)
-    elif convert:
-        setattr(obj, attr or tag, convert(e.text))  # FIXME: convert(e)
+        return setattr(self, name, default)
+    elif convert is not None:
+        return setattr(self, name, convert(e))
     else:
-        setattr(obj, attr or tag, e.text)
+        return setattr(self, name, e.text)
 
 
-def _parse_datetime(s):
+def _to_datetime(e):
     from email.utils import mktime_tz, parsedate_tz
     try:
-        return datetime.datetime.fromtimestamp(mktime_tz(parsedate_tz(s)))
+        timestamp = mktime_tz(parsedate_tz(e.text))
     except AttributeError:
+        logger.warn('Invalid podcast date element "%s"', e.text)
         return None
     except TypeError:
+        logger.warn('Invalid podcast date element "%s"', e.text)
         return None
+    return datetime.datetime.fromtimestamp(timestamp)
 
 
-def _parse_timedelta(s):
+def _to_timedelta(e):
     try:
-        groups = DURATION_RE.match(s or '').groupdict('0')
-        return datetime.timedelta(**{k: int(v) for k, v in groups.items()})
+        groups = DURATION_RE.match(e.text).groupdict('0')
     except AttributeError:
+        logger.warn('Invalid podcast duration element "%s"', e.text)
         return None
     except TypeError:
+        logger.warn('Invalid podcast duration element "%s"', e.text)
         return None
+    return datetime.timedelta(**{k: int(v) for k, v in groups.items()})
 
 
-class Podcast(object):
-    """
-    Podcast implementation according to
-    https://www.apple.com/itunes/podcasts/specs.html
-    """
+def _to_wordlist(e):
+    return [s.strip() for s in e.text.split(',')]
 
-    # fallbacks
-    title = None
-    link = None
-    #description = None
-    language = None
-    copyright = None
-    author = None
-    block = None
-    category = None  # FIXME: multiple, sub-categories
-    image = {}  # FIXME: attributes from either image?
-    explicit = None
-    complete = None
-    #new_feed_url = None
-    owner = {}  # TODO (frozent default dict?)
-    subtitle = None
-    summary = None
-    #keywords = frozenset()
+
+class Podcast(collections.Sequence):
 
     def __init__(self, url):
         self.url = url
         self.update()
 
-    def update(self, url=None):
+    def __getitem__(self, index):
+        return self.episodes.__getitem__(index)
+
+    def __iter__(self):
+        return self.episodes.__iter__()
+
+    def __len__(self):
+        return self.episodes.__len__()
+
+    def update(self):
         from urllib2 import urlopen
-        from xml.etree.ElementTree import fromstring
+        import xml.etree.ElementTree as ET
 
-        root = fromstring(urlopen(self.url or url).read())
-        channel = root.find('channel')
+        channel = ET.parse(urlopen(self.url)).find('channel')
+        for name in ('title', 'link', 'description', 'language', 'copyright'):
+            self._settagattr(name, channel, name)
+        for name in ('author', 'complete', 'explicit', 'subtitle', 'summary'):
+            self._settagattr(name, channel, 'itunes:' + name)
+        self._settagattr('image', channel, 'itunes:image', lambda e: e.attrib)
+        self._settagattr('keywords', channel, 'itunes:keywords', _to_wordlist)
 
-        for i in ('title', 'link', 'description'):
-            setattr(self, i, channel.findtext(i))
+        # self.category: first browse (top-level) category
+        self._settagattr('category', channel, 'itunes:category',
+                         lambda e: e.get('text'))
+        # self.categories: {category: [sub-category, ...], ...}
+        self.categories = {}
+        for e in channel.iterfind('itunes:category', namespaces=NAMESPACES):
+            subcats = e.iterfind('itunes:category', namespaces=NAMESPACES)
+            self.categories[e.get('text')] = [i.get('text') for i in subcats]
 
-        self.language = channel.findtext('language')
-        self.copyright = channel.findtext('copyright')
-        self.subtitle = channel.findtext('itunes:subtitle', namespaces=XMLNS)
-        #self.author = channel.findtext('{%s}author' % XMLNS['itunes'])
-        self.author = channel.findtext('itunes:author', namespaces=XMLNS)
-        self.summary = channel.findtext('itunes:summary', namespaces=XMLNS)
-        #self.author = channel.findtext('itunes:author', namespaces=XMLNS)
-        # self.owner
-        self.image = channel.find('itunes:image', namespaces=XMLNS).get('href')
-        """
-        <image>
-          <url>http://www.w3schools.com/images/logo.gif</url>
-          <title>W3Schools.com</title>
-          <link>http://www.w3schools.com</link>
-        </image>
-        """
-        category = channel.find('itunes:category', namespaces=XMLNS)
-        if category is not None:
-            self.category = category.get('text')
-        # self.subcategories
+        self.episodes = [Episode(i) for i in channel.iter(tag='item')]
 
-        self.episodes = []
-        for i in channel.iter(tag='item'):
-            self.episodes.append(self.Episode(i))
+    def _settagattr(self, name, item, tag, convert=None):
+        _settagattr(self, name, item, tag, None, convert, NAMESPACES)
 
-    class Episode(object):
 
-        title = None
-        link = None
-        description = None
-        #pub_date = None
-        enclosure = None
-        guid = None
+class Episode(object):
 
-        author = None
-        block = None
-        image = None
-        duration = None
-        explicit = None
-        #is_closed_captioned = None
-        order = None
-        subtitle = None
-        summary = None
+    def __init__(self, item):
+        for name in ('title', 'link', 'description', 'guid'):
+            self._settagattr(name, item, name)
+        for name in ('author', 'block', 'explicit', 'subtitle', 'summary'):
+            self._settagattr(name, item, 'itunes:' + name)
+        self._settagattr('enclosure', item, 'enclosure', lambda e: e.attrib)
+        self._settagattr('pubdate', item, 'pubDate', _to_datetime)
+        self._settagattr('duration', item, 'itunes:duration', _to_timedelta)
+        self._settagattr('keywords', item, 'itunes:keywords', _to_wordlist)
+        self._settagattr('order', item, 'itunes:order', lambda e: int(e.text))
 
-        def __init__(self, item):
-            for tag in ('title', 'link', 'description', 'guid'):
-                _settagattr(self, item, tag)
-            _settagattr(self, item, 'pubDate', 'pubdate', convert=_parse_datetime)
-            self.enclosure = item.find('enclosure').attrib  # FIXME: not present?
+        # normalization/fallbacks
+        if not self.guid and self.enclosure:
+            self.guid = self.enclosure.get('url')
 
-            for tag in ('author', 'block', 'explicit', 'subtitle', 'summary'):
-                _settagattr(self, item, 'itunes:' + tag, tag)
-            self.duration = _parse_timedelta(
-                item.findtext('itunes:duration', namespaces=XMLNS))
-            self.order = item.findtext('itunes:order', namespaces=XMLNS)  # FIXME: int
-            # TODO: image w/fallback (normalize url/href)
-            # TODO: enclosure.url as guid if not set
+    def __cmp__(self, other):
+        from sys import maxint
+        # iTunes default sort order: <itunes:order>, pubdate (newest to oldest)
+        lhs = (self.order or maxint, other.pubdate or datetime.datetime.min)
+        rhs = (other.order or maxint, self.pubdate or datetime.datetime.min)
+        return cmp(lhs, rhs)
 
-        def __cmp__(self, other):
-            # TODO: order
-            if self.pubdate and other.pubdate:
-                return cmp(self.pubdate, other.pubdate)
-            elif self.pubdate:
-                return -1
-            else:
-                return 0  # FIXME
+    def _settagattr(self, name, item, tag, convert=None):
+        _settagattr(self, name, item, tag, None, convert, NAMESPACES)
 
-        __hash__ = None
+    __hash__ = None  # __cmp__ defined
 
 
 if __name__ == '__main__':
     import argparse
-
-    logging.basicConfig()
+    import sys
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('url', metavar='URL')
+    parser.add_argument('url', metavar='URL', help='Podcast URL')
+    parser.add_argument('-d', '--debug', action='store_true')
+    parser.add_argument('-n', '--no-episodes', action='store_true')
+    parser.add_argument('-r', '--reverse', action='store_true')
+    parser.add_argument('-s', '--sort', action='store_true')
     parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
 
-    if args.verbose:
-        logger.setLevel(logging.DEBUG)
-    pc = Podcast(args.url)
-    print "%s [%s]" % (pc.title, pc.author)
-    print pc.image
-    print pc.language
-    print pc.link
-    print pc.copyright
-    print pc.subtitle
-    print pc.summary
-    print pc.description
-    print pc.category
-    #print "owner: %s" % pc.owner
+    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
-    for e in sorted(pc.episodes):
-        print "%s: %s / %s [%s]" % (e.pubdate, e.title, e.subtitle, e.duration)
+    podcast = Podcast(args.url)
+
+    if args.verbose:
+        print '\n%12s: %s' % ('URL', podcast.url)
+        for name in ('title', 'link', 'description', 'language', 'copyright'):
+            print '%12s: %s' % (name.title(), getattr(podcast, name))
+        for name in ('author', 'complete', 'explicit', 'subtitle', 'summary'):
+            print '%12s: %s' % (name.title(), getattr(podcast, name))
+        for name in ('image', 'keywords', 'category', 'categories'):
+            print '%12s: %s' % (name.title(), getattr(podcast, name))
+    else:
+        print "%s (%d episodes)" % (podcast.title, len(podcast))
+
+    if args.no_episodes:
+        sys.exit(0)
+
+    episodes = podcast
+    if args.sort:
+        episodes = sorted(episodes)
+    if args.reverse:
+        episodes = reversed(episodes)
+    for index, episode in enumerate(episodes):
         if args.verbose:
-            print "  %r" % e.enclosure
-            print "  link: %s" % e.link
-            print "  guid: %s" % e.guid
-            print "  order: %s" % e.order
-            print "  %s" % e.summary  # HTML?
+            print '\n%12s: #%d [%r]' % ('Episode', index + 1, episode.order)
+            for name in ('title', 'link', 'description', 'guid'):
+                print '%12s: %s' % (name.title(), getattr(episode, name))
+            for name in ('author', 'block', 'explicit', 'subtitle', 'summary'):
+                print '%12s: %s' % (name.title(), getattr(episode, name))
+            for name in ('enclosure', 'pubdate', 'duration', 'keywords'):
+                print '%12s: %s' % (name.title(), getattr(episode, name))
+        else:
+            print '#%d: [%s] %s' % (index + 1, episode.pubdate, episode.title)
