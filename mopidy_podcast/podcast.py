@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 def _parse_date(t):
     return time.strftime('%Y-%m-%d', t) if t else None
 
+
 def _parse_duration(s):
     from datetime import timedelta
     match = DURATION_RE.match(s or '')
@@ -41,13 +42,12 @@ class Podcast(object):
         self.feed_url = feed_url
         self.update()
 
-
     def update(self):
         # TODO: check etag, modified...
         fd = feedparser.parse(self.feed_url)
 
         # FIXME: multiple authors
-        artists=[Artist(name=fd.feed.author)]
+        artists = [Artist(name=fd.feed.author)]
 
         album = Album(
             uri=uricompose(self.URI_SCHEME, path=self.feed_url),
@@ -65,7 +65,7 @@ class Podcast(object):
         # TODO: sort by pubDate asc/desc, itunes_order, ...
         for index, item in enumerate(fd.entries):
             # FIXME: assuming guid == link to mp3
-            uri=uricompose(
+            uri = uricompose(
                 self.URI_SCHEME,
                 path=self.feed_url,
                 fragment=item.guid

@@ -7,6 +7,7 @@ from mopidy import backend
 from mopidy.models import SearchResult, Ref
 
 from .podcast import Podcast
+from .query import Query
 from .uritools import urisplit
 
 logger = logging.getLogger(__name__)
@@ -49,8 +50,16 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         return [podcast.tracks[uriparts.getfragment()]]
 
     def search(self, query=None, uris=None):
+        from itertools import chain
         logger.debug("podcast search: %r", query)
-        return None
+        query = Query(query, False)
+        tracks = [pc.tracks.values() for pc in self.podcasts.values() if pc]
+        albums = [pc.album for pc in self.podcasts.values() if pc]
+        return SearchResult(
+            uri='podcast:?',
+            tracks=query.filter_tracks(chain(*tracks)),
+            albums=query.filter_albums(albums)
+            )
 
     def getconfig(self, name):
         return self.backend.getconfig(name)
