@@ -53,7 +53,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         uriparts = urisplit(uri)
         entry = self.podcasts.get(uriparts.getpath())
 
-        if not e:
+        if not entry:
             return []
         elif not uriparts.fragment:
             return entry[self.TRACKS].values()
