@@ -10,8 +10,9 @@ from mopidy import core
 class LibraryTest(unittest.TestCase):
     config = {
         'podcast': {
-            'feed_urls': ['http://www.npr.org/rss/podcast.php?id=510019'],
+            'feed_urls': [],
             'browse_label': 'Podcasts',
+            'update_interval': 0,
             'sort_order': 'desc'
         }
     }
