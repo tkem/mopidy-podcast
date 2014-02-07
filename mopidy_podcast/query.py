@@ -1,6 +1,9 @@
 from __future__ import unicode_literals
 
 import collections
+import logging
+
+logger = logging.getLogger(__name__)
 
 QUERY_FIELDS = {
     'uri',
@@ -80,16 +83,16 @@ class Query(collections.Mapping):
     class QV(object):
 
         def __init__(self, value):
-            self.__value = str(value).strip().lower()
+            self.__value = value.strip().lower()
 
         def __eq__(self, other):
-            return other and self.__value in str(other).lower()
+            return other and self.__value in other.lower()
 
         def __ne__(self, other):
-            return not other or self.__value not in str(other).lower()
+            return not other or self.__value not in other.lower()
 
         def __str__(self):
-            return str(self.__value)
+            return self.__value
 
         def __int__(self):
             return int(self.__value)
