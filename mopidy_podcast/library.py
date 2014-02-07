@@ -20,7 +20,7 @@ class DebugTimer(object):
         self.start = None
 
     def __enter__(self):
-        logger.debug('%s...', self.msg)
+        #logger.debug('%s...', self.msg)
         self.start = time.time()
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -61,8 +61,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             return [entry[self.TRACKS][uriparts.getfragment()]]
 
     def browse(self, uri):
-        logger.debug("browse podcasts %s", uri)
-
         self._update_podcasts()
 
         refs = []
@@ -78,34 +76,10 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         return refs
 
     def find_exact(self, query=None, uris=None):
-        logger.debug("find podcasts %r", query)
-
-        self._update_podcasts()
-
-        query = Query(query, exact=True)
-        tracks = [p[self.TRACKS].values() for p in self.podcasts.values()]
-        albums = [p[self.ALBUM] for p in self.podcasts.values()]
-
-        return SearchResult(
-            uri=uricompose(self.uri_scheme, query=str(query)),
-            tracks=query.filter_tracks(itertools.chain(*tracks)),
-            albums=query.filter_albums(albums)
-        )
+        return self._search_podcasts(Query(query, exact=True))
 
     def search(self, query=None, uris=None):
-        logger.debug("search podcasts %r", query)
-
-        self._update_podcasts()
-
-        query = Query(query, exact=False)
-        tracks = [p[self.TRACKS].values() for p in self.podcasts.values()]
-        albums = [p[self.ALBUM] for p in self.podcasts.values()]
-
-        return SearchResult(
-            uri=uricompose(self.uri_scheme, query=str(query)),
-            tracks=query.filter_tracks(itertools.chain(*tracks)),
-            albums=query.filter_albums(albums)
-        )
+        return self._search_podcasts(Query(query, exact=False))
 
     def getstream(self, uri):
         return urisplit(uri).getfragment()
@@ -145,19 +119,31 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         expired = time.time() - self.getconfig('update_interval')
         updated = 0
 
-        # check for podcasts that couldn't be loaded at startup
-        for url in self.getconfig('feed_urls'):
-            e = self.podcasts.get(url)
-            if e and e[self.TIMESTAMP] > expired:
-                continue  # podcast up-to-date
-            try:
-                self.podcasts[url] = self._load_podcast(url)
-            except Exception as e:
-                logger.error('Error loading podcast %s: %s', url, e)
-            updated += 1
+        with DebugTimer('Updating podcasts'):
+            # check for podcasts that couldn't be loaded at startup
+            for url in self.getconfig('feed_urls'):
+                e = self.podcasts.get(url)
+                if e and e[self.TIMESTAMP] > expired:
+                    continue  # podcast up-to-date
+                try:
+                    self.podcasts[url] = self._load_podcast(url)
+                except Exception as e:
+                    logger.error('Error loading podcast %s: %s', url, e)
+                    updated += 1
         if updated:
             logger.info("Updated %d podcasts", updated)
 
+    def _search_podcasts(self, query):
+        self._update_podcasts()
+
+        tracks = [v[self.TRACKS].values() for v in self.podcasts.values()]
+        albums = [v[self.ALBUM] for v in self.podcasts.values()]
+
+        return SearchResult(
+            uri=uricompose(self.uri_scheme, query=repr(query)),
+            tracks=query.filter_tracks(itertools.chain(*tracks)),
+            albums=query.filter_albums(albums)
+        )
 
     def _podcast_to_album(self, podcast):
         kwargs = {
