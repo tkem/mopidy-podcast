@@ -28,7 +28,7 @@ Configuration
 =============
 
 Configuration items are still subject to change at this point, but
-basically you have to provide a list of feed URLs for your favorite 
+basically you have to provide a list of feed URLs for your favorite
 Podcasts, which will then show up under "Podcasts" -- or whatever you
 set "browse_label" to -- when browsing::
 
@@ -44,13 +44,14 @@ set "browse_label" to -- when browsing::
   # top-level name for browsing
   browse_label = Podcasts
 
-  # preload podcasts on startup
-  preload = true
+  # podcast update interval in seconds
+  update_interval = 86400
 
+  # sort order: "asc" (oldest first) or "desc" (newest first)
+  sort_order = desc
 
-Configured Podcasts will be regularly updated for new episodes
-(details TBD).
-
+Configured Podcasts will be updated and checked for new episodes every
+"update_interval" seconds.
 
 
 Project resources
@@ -64,7 +65,16 @@ Project resources
 Changelog
 =========
 
-v0.1.0 (UNRELEASED)
+
+v0.2.0 (2014-02-07)
+----------------------------------------
+
+- Support searching for podcasts and episodes.
+- Improve performance by removing feedparser.
+- Improve handling of iTunes tags.
+
+
+v0.1.0 (2014-02-01)
 ----------------------------------------
 
 - Initial release.

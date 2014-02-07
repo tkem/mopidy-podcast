@@ -22,7 +22,7 @@ class Extension(ext.Extension):
         schema['browse_label'] = config.String()
         schema['update_interval'] = config.Integer(minimum=0)
         schema['sort_order'] = config.String(choices=['asc', 'desc'])
-        schema['preload'] = config.Deprecated()
+        schema['preload'] = config.Deprecated()  # FIXME: remove
         return schema
 
     def setup(self, registry):
