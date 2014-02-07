@@ -12,7 +12,7 @@ class LibraryTest(unittest.TestCase):
         'podcast': {
             'feed_urls': ['http://www.npr.org/rss/podcast.php?id=510019'],
             'browse_label': 'Podcasts',
-            'preload': False
+            'sort_order': 'desc'
         }
     }
 

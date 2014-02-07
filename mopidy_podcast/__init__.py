@@ -20,7 +20,8 @@ class Extension(ext.Extension):
         schema = super(Extension, self).get_config_schema()
         schema['feed_urls'] = config.List()
         schema['browse_label'] = config.String()
-        schema['preload'] = config.Boolean()
+        schema['sort_order'] = config.String(choices=['asc', 'desc'])
+        schema['preload'] = config.Deprecated()
         return schema
 
     def setup(self, registry):

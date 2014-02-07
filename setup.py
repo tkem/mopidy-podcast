@@ -25,8 +25,7 @@ setup(
     install_requires=[
         'setuptools',
         'Mopidy >= 0.18',
-        'Pykka >= 1.1',
-        'feedparser >= 5.1',
+        'Pykka >= 1.1'
     ],
     test_suite='nose.collector',
     tests_require=[
