@@ -100,7 +100,7 @@ class Podcast(collections.Sequence):
             subcats = e.iterfind('itunes:category', namespaces=NAMESPACES)
             self.categories[e.get('text')] = [i.get('text') for i in subcats]
 
-        self.episodes = [Episode(i) for i in channel.iter(tag='item')]
+        self.episodes = [Episode(item) for item in channel.iter(tag='item')]
 
     def _settagattr(self, name, item, tag, convert=None):
         _settagattr(self, name, item, tag, None, convert, NAMESPACES)
@@ -123,17 +123,8 @@ class Episode(object):
         if not self.guid and self.enclosure:
             self.guid = self.enclosure.get('url')
 
-    def __cmp__(self, other):
-        from sys import maxint
-        # iTunes default sort order: <itunes:order>, pubdate (newest to oldest)
-        lhs = (self.order or maxint, other.pubdate or datetime.datetime.min)
-        rhs = (other.order or maxint, self.pubdate or datetime.datetime.min)
-        return cmp(lhs, rhs)
-
     def _settagattr(self, name, item, tag, convert=None):
         _settagattr(self, name, item, tag, None, convert, NAMESPACES)
-
-    __hash__ = None  # __cmp__ defined
 
 
 if __name__ == '__main__':
@@ -144,8 +135,6 @@ if __name__ == '__main__':
     parser.add_argument('url', metavar='URL', help='Podcast URL')
     parser.add_argument('-d', '--debug', action='store_true')
     parser.add_argument('-n', '--no-episodes', action='store_true')
-    parser.add_argument('-r', '--reverse', action='store_true')
-    parser.add_argument('-s', '--sort', action='store_true')
     parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
 
@@ -162,17 +151,12 @@ if __name__ == '__main__':
         for name in ('image', 'keywords', 'category', 'categories'):
             print '%12s: %s' % (name.title(), getattr(podcast, name))
     else:
-        print "%s (%d episodes)" % (podcast.title, len(podcast))
+        print "%s [%s]" % (podcast.title, podcast.author)
 
     if args.no_episodes:
         sys.exit(0)
 
-    episodes = podcast
-    if args.sort:
-        episodes = sorted(episodes)
-    if args.reverse:
-        episodes = reversed(episodes)
-    for index, episode in enumerate(episodes):
+    for index, episode in enumerate(podcast):
         if args.verbose:
             print '\n%12s: #%d [%r]' % ('Episode', index + 1, episode.order)
             for name in ('title', 'link', 'description', 'guid'):
