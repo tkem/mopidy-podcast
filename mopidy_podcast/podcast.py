@@ -32,7 +32,7 @@ def _settagattr(self, name, item, tag, default=None, convert=None,
     elif convert is not None:
         return setattr(self, name, convert(e))
     else:
-        return setattr(self, name, e.text)
+        return setattr(self, name, e.text.strip())
 
 
 def _to_datetime(e):
