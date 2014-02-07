@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from mopidy import config, ext
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 
 class Extension(ext.Extension):
@@ -20,6 +20,7 @@ class Extension(ext.Extension):
         schema = super(Extension, self).get_config_schema()
         schema['feed_urls'] = config.List()
         schema['browse_label'] = config.String()
+        schema['update_interval'] = config.Integer(minimum=0)
         schema['sort_order'] = config.String(choices=['asc', 'desc'])
         schema['preload'] = config.Deprecated()
         return schema

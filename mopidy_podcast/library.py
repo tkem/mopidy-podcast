@@ -46,21 +46,29 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 self.podcasts[url] = self._load_podcast(url)
             except Exception as e:
                 logger.error('Error loading podcast %s: %s', url, e)
-                raise
         logger.info("Loaded %d podcasts", len(self.podcasts))
 
     def browse(self, uri):
         logger.debug("browse podcasts %s", uri)
 
+        self._update_podcasts()
+
+        refs = []
         if not uri:
-            return [self.root_directory]
+            refs.append(self.root_directory)
         elif uri == self.root_directory.uri:
-            return self._browse_root()
+            for album in (i[self.ALBUM] for i in self.podcasts.values()):
+                refs.append(Ref.directory(uri=album.uri, name=album.name))
         else:
-            return self._browse_podcast(urisplit(uri).getpath())
+            url = urisplit(uri).getpath()
+            for track in self.podcasts[url][self.TRACKS].values():
+                refs.append(Ref.track(uri=track.uri, name=track.name))
+        return refs
 
     def lookup(self, uri):
         logger.debug("lookup podcast %s", uri)
+
+        # lookup needs to be fast, so don't update
         uriparts = urisplit(uri)
         podcast = self.podcasts.get(uriparts.getpath())
 
@@ -73,6 +81,9 @@ class PodcastLibraryProvider(backend.LibraryProvider):
 
     def search(self, query=None, uris=None):
         logger.debug("search podcasts %r", query)
+
+        self._update_podcasts()
+
         query = Query(query, False)
         tracks = [p[self.TRACKS].values() for p in self.podcasts.values()]
         albums = [p[self.ALBUM] for p in self.podcasts.values()]
@@ -84,7 +95,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         )
 
     def getstream(self, uri):
-        # FIXME: fragment == stream url ???
         return urisplit(uri).getfragment()
 
     def getconfig(self, name):
@@ -96,8 +106,11 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         album = self._podcast_to_album(podcast)
         tracks = {}
         for index, e in enumerate(self._sort_episodes(podcast)):
+            if not e.enclosure or not 'url' in e.enclosure:
+                continue
+            stream = e.enclosure['url']   # TODO: store under guid?
             kwargs = {
-                'uri': uricompose(self.uri_scheme, path=url, fragment=e.guid),
+                'uri': uricompose(self.uri_scheme, path=url, fragment=stream),
                 'name': e.title,
                 'album': album,
                 'genre': podcast.category,
@@ -112,29 +125,25 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 kwargs['date'] = e.pubdate.date().isoformat()
             if e.duration:
                 kwargs['length'] = int(e.duration.total_seconds() * 1000)
-            tracks[e.guid] = Track(**kwargs)
+            tracks[stream] = Track(**kwargs)
         return (podcast, album, tracks, time.time())
 
-    def _browse_root(self):
-        refs = []
-        for podcast in self.podcasts.values():
-            ref = Ref.directory(
-                uri=podcast[self.ALBUM].uri,
-                name=podcast[self.ALBUM].name
-            )
-            refs.append(ref)
-        return refs
+    def _update_podcasts(self):
+        expired = time.time() - self.getconfig('update_interval')
+        updates = 0
 
-    def _browse_podcast(self, url):
-        podcast = self.podcasts[url]
-        refs = []
-        for track in podcast[self.TRACKS].values():
-            ref = Ref.track(
-                uri=track.uri,
-                name=track.name
-            )
-            refs.append(ref)
-        return refs
+        # check for podcasts that couldn't be loaded at startup
+        for url in self.getconfig('feed_urls'):
+            e = self.podcasts.get(url)
+            if e and e[self.TIMESTAMP] > expired:
+                continue  # podcast up-to-date
+            try:
+                self.podcasts[url] = self._load_podcast(url)
+            except Exception as e:
+                logger.error('Error loading podcast %s: %s', url, e)
+            updates += 1
+        logger.info("Updated %d podcasts", updates)
+
 
     def _podcast_to_album(self, podcast):
         kwargs = {

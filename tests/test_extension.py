@@ -18,8 +18,7 @@ class ExtensionTest(unittest.TestCase):
         ext = Extension()
 
         schema = ext.get_config_schema()
-        # TODO Test the content of your config schema
-        #self.assertIn('username', schema)
-        #self.assertIn('password', schema)
-
-    # TODO Write more tests
+        self.assertIn('feed_urls', schema)
+        self.assertIn('browse_label', schema)
+        self.assertIn('update_interval', schema)
+        self.assertIn('sort_order', schema)
