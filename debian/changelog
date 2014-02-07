@@ -1,3 +1,9 @@
+mopidy-podcast (0.2.0-0tkem1) UNRELEASED; urgency=low
+
+  * New upstream release
+
+ -- Thomas Kemmer <tkemmer@computer.org>  Fri, 07 Feb 2014 10:40:08 +0100
+
 mopidy-podcast (0.1.0-0tkem1) unstable; urgency=low
 
   * Initial test release
