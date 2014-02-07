@@ -48,6 +48,18 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 logger.error('Error loading podcast %s: %s', url, e)
         logger.info("Loaded %d podcasts", len(self.podcasts))
 
+    def lookup(self, uri):
+        # lookup needs to be fast, so don't update
+        uriparts = urisplit(uri)
+        entry = self.podcasts.get(uriparts.getpath())
+
+        if not e:
+            return []
+        elif not uriparts.fragment:
+            return entry[self.TRACKS].values()
+        else:
+            return [entry[self.TRACKS][uriparts.getfragment()]]
+
     def browse(self, uri):
         logger.debug("browse podcasts %s", uri)
 
@@ -65,26 +77,27 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 refs.append(Ref.track(uri=track.uri, name=track.name))
         return refs
 
-    def lookup(self, uri):
-        logger.debug("lookup podcast %s", uri)
+    def find_exact(self, query=None, uris=None):
+        logger.debug("find podcasts %r", query)
 
-        # lookup needs to be fast, so don't update
-        uriparts = urisplit(uri)
-        podcast = self.podcasts.get(uriparts.getpath())
+        self._update_podcasts()
 
-        if not podcast:
-            return []
-        elif not uriparts.fragment:
-            return podcast[self.TRACKS].values()
-        else:
-            return [podcast[self.TRACKS][uriparts.getfragment()]]
+        query = Query(query, exact=True)
+        tracks = [p[self.TRACKS].values() for p in self.podcasts.values()]
+        albums = [p[self.ALBUM] for p in self.podcasts.values()]
+
+        return SearchResult(
+            uri=uricompose(self.uri_scheme, query=str(query)),
+            tracks=query.filter_tracks(itertools.chain(*tracks)),
+            albums=query.filter_albums(albums)
+        )
 
     def search(self, query=None, uris=None):
         logger.debug("search podcasts %r", query)
 
         self._update_podcasts()
 
-        query = Query(query, False)
+        query = Query(query, exact=False)
         tracks = [p[self.TRACKS].values() for p in self.podcasts.values()]
         albums = [p[self.ALBUM] for p in self.podcasts.values()]
 
@@ -130,7 +143,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
 
     def _update_podcasts(self):
         expired = time.time() - self.getconfig('update_interval')
-        updates = 0
+        updated = 0
 
         # check for podcasts that couldn't be loaded at startup
         for url in self.getconfig('feed_urls'):
@@ -141,8 +154,9 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 self.podcasts[url] = self._load_podcast(url)
             except Exception as e:
                 logger.error('Error loading podcast %s: %s', url, e)
-            updates += 1
-        logger.info("Updated %d podcasts", updates)
+            updated += 1
+        if updated:
+            logger.info("Updated %d podcasts", updated)
 
 
     def _podcast_to_album(self, podcast):
