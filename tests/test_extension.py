@@ -9,7 +9,6 @@ class ExtensionTest(unittest.TestCase):
 
     def test_get_default_config(self):
         ext = Extension()
-
         config = ext.get_default_config()
         self.assertIn('[podcast]', config)
         self.assertIn('enabled = true', config)
@@ -18,7 +17,12 @@ class ExtensionTest(unittest.TestCase):
         ext = Extension()
 
         schema = ext.get_config_schema()
-        self.assertIn('feed_urls', schema)
+        self.assertIn('directories', schema)
         self.assertIn('browse_label', schema)
         self.assertIn('update_interval', schema)
         self.assertIn('sort_order', schema)
+        self.assertIn('cache_size', schema)
+        self.assertIn('cache_ttl', schema)
+        self.assertIn('timeout', schema)
+        self.assertIn('feeds', schema)
+        self.assertIn('feeds_label', schema)

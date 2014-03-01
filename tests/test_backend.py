@@ -7,9 +7,13 @@ from mopidy_podcast.backend import PodcastBackend
 class BackendTest(unittest.TestCase):
     config = {
         'podcast': {
-            'feed_urls': ['http://www.npr.org/rss/podcast.php?id=510019'],
-            'browse_label': 'Podcasts',
-            'preload': False
+            'directories': [],
+            'browse_label': None,
+            'update_interval': 86400,
+            'sort_order': 'asc',
+            'cache_size': None,
+            'cache_ttl': None,
+            'timeout': None
         }
     }
 

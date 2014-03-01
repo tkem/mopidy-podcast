@@ -1,31 +1,24 @@
-****************************
 Mopidy-Podcast
-****************************
+========================================================================
 
-.. image:: https://pypip.in/v/Mopidy-Podcast/badge.png
-    :target: https://pypi.python.org/pypi/Mopidy-Podcast/
-    :alt: Latest PyPI version
-
-.. image:: https://pypip.in/d/Mopidy-Podcast/badge.png
-    :target: https://pypi.python.org/pypi/Mopidy-Podcast/
-    :alt: Number of PyPI downloads
-
-Mopidy extension for streaming Podcasts
+Mopidy-Podcast is a Mopidy_ extension for searching and streaming
+Podcasts.
 
 
 Installation
-============
+------------------------------------------------------------------------
 
-Install by running::
+Like other Mopidy extensions, Mopidy-Podcast can be installed using
+pip by running::
 
     pip install Mopidy-Podcast
 
-Or manually install Debian/Ubuntu packages for Mopidy-Podcast
-`releases <https://github.com/tkem/mopidy-podcast/releases>`_.
+You can also download and install Debian/Ubuntu packages for
+Mopidy-Podcast releases_.
 
 
 Configuration
-=============
+------------------------------------------------------------------------
 
 Configuration items are still subject to change at this point, but
 basically you have to provide a list of feed URLs for your favorite
@@ -54,27 +47,33 @@ Configured Podcasts will be updated and checked for new episodes every
 "update_interval" seconds.
 
 
-Project resources
-=================
+Project Resources
+------------------------------------------------------------------------
 
-- `Source code <https://github.com/tkem/mopidy-podcast>`_
-- `Issue tracker <https://github.com/tkem/mopidy-podcast/issues>`_
-- `Download development snapshot <https://github.com/tkem/mopidy-podcast/tarball/master#egg=Mopidy-Podcast-dev>`_
+- `Source Code`_
+- `Issue Tracker`_
+- `Change Log`_
 
+.. image:: https://pypip.in/v/Mopidy-Podcast/badge.png
+    :target: https://pypi.python.org/pypi/Mopidy-Podcast/
+    :alt: Latest PyPI version
 
-Changelog
-=========
-
-
-v0.2.0 (2014-02-07)
-----------------------------------------
-
-- Support searching for podcasts and episodes.
-- Improve performance by removing feedparser.
-- Improve handling of iTunes tags.
+.. image:: https://pypip.in/d/Mopidy-Podcast/badge.png
+    :target: https://pypi.python.org/pypi/Mopidy-Podcast/
+    :alt: Number of PyPI downloads
 
 
-v0.1.0 (2014-02-01)
-----------------------------------------
+License
+------------------------------------------------------------------------
 
-- Initial release.
+Mopidy-Podcast is Copyright 2014 Thomas Kemmer.
+
+Licensed under the `Apache License, Version 2.0`_.
+
+
+.. _Mopidy: http://www.mopidy.com/
+.. _releases: https://github.com/tkem/mopidy-podcast/releases
+.. _Source Code: https://github.com/tkem/mopidy-podcast
+.. _Issue Tracker: https://github.com/tkem/mopidy-podcast/issues/
+.. _Change Log: https://github.com/tkem/mopidy-podcast/blob/master/Changes
+.. _Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0

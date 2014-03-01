@@ -10,14 +10,18 @@ from mopidy import core
 class LibraryTest(unittest.TestCase):
     config = {
         'podcast': {
-            'feed_urls': [],
-            'browse_label': 'Podcasts',
-            'update_interval': 0,
-            'sort_order': 'desc'
+            'directories': [],
+            'browse_label': None,
+            'update_interval': 86400,
+            'sort_order': 'asc',
+            'cache_size': None,
+            'cache_ttl': None,
+            'timeout': None
         }
     }
 
     def setUp(self):
+        PodcastBackend.registry = {'podcast:directory': []}
         self.backend = PodcastBackend.start(
             config=self.config, audio=None).proxy()
         self.core = core.Core(backends=[self.backend])
