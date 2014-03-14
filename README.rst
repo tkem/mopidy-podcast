@@ -21,12 +21,12 @@ Configuration
 ------------------------------------------------------------------------
 
 Configuration items are still subject to change at this point, but
-basically you have to specify a list of podcast "directories" you want
+basically you have to specify a list of podcast ``directories`` you want
 to use for searching and browsing.
 
-The default "feeds" directory is included with the distribution, and
-provided a list of feed URLs for your favorite podcasts will show up
-under "Subscribed Feeds" -- or whatever you set "feeds_label" to --
+The default ``feeds`` directory is included with the distribution, and
+provided a list of feed URLs for your favorite podcasts, will show up
+under *Subscribed Feeds* - or whatever you set ``feeds_label`` to -
 when browsing::
 
     [podcast]
