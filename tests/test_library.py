@@ -13,8 +13,8 @@ class LibraryTest(unittest.TestCase):
             'directories': [],
             'browse_label': None,
             'search_limit': None,
-            'update_interval': 86400,
             'sort_order': 'desc',
+            'update_interval': 86400,
             'cache_size': None,
             'cache_ttl': None,
             'timeout': None

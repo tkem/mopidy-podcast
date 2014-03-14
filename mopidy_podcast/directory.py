@@ -111,7 +111,8 @@ class PodcastDirectoryController(PodcastDirectory):
 
     def _browse(self, url):
         refs = []
-        for e in super(PodcastDirectoryController, self).get(url).episodes:
+        podcast = super(PodcastDirectoryController, self).get(url)
+        for e in podcast.episodes[:self.backend.max_episodes]:
             if not e.enclosure or not e.enclosure.url:
                 logger.debug('Skipping podcast episode w/o enclosure: %r', e)
                 continue

@@ -9,8 +9,8 @@ class BackendTest(unittest.TestCase):
         'podcast': {
             'directories': [],
             'browse_label': None,
-            'update_interval': 86400,
             'sort_order': 'asc',
+            'update_interval': 86400,
             'cache_size': None,
             'cache_ttl': None,
             'timeout': None

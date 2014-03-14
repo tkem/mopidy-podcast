@@ -41,11 +41,14 @@ when browsing::
     # maximum number of search results
     search_limit = 50
 
-    # directory update interval in seconds
-    update_interval = 86400
+    # maximum number of episodes to show for each podcast
+    max_episodes = 100
 
     # sort order: "asc" (oldest first) or "desc" (newest first)
     sort_order = desc
+
+    # directory update interval in seconds
+    update_interval = 86400
 
     # number of podcasts to cache
     cache_size = 128

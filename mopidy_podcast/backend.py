@@ -29,6 +29,7 @@ class PodcastBackend(pykka.ThreadingActor, backend.Backend):
         self.config = config
         self.cache = self._cache(**config[self.name])
         self.timeout = config[self.name]['timeout']
+        self.max_episodes = config[self.name]['max_episodes']
         self.directory = PodcastDirectoryController(self, directories)
         self.library = PodcastLibraryProvider(backend=self)
         self.playback = PodcastPlaybackProvider(audio=audio, backend=self)
