@@ -20,7 +20,7 @@ class Extension(ext.Extension):
         schema = super(Extension, self).get_config_schema()
         schema['directories'] = config.List()
         schema['browse_label'] = config.String()
-        schema['search_limit'] = config.Integer(minimum=1)
+        schema['search_limit'] = config.Integer(optional=True, minimum=1)
         schema['update_interval'] = config.Integer(minimum=1)
         schema['sort_order'] = config.String(choices=['asc', 'desc'])
         schema['cache_size'] = config.Integer(optional=True, minimum=1)
@@ -38,7 +38,6 @@ class Extension(ext.Extension):
     def setup(self, registry):
         from .backend import PodcastBackend
         from .feeds import FeedsDirectory
-
         registry.add('backend', PodcastBackend)
         registry.add('podcast:directory', FeedsDirectory)
         PodcastBackend.registry = registry

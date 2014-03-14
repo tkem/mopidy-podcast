@@ -1,5 +1,10 @@
 Revision history for Mopidy-Podcast
 
+0.3.0   2014-03-14
+
+        - Complete rewrite to integrate podcast directory extensions.
+
+
 0.2.0   2014-02-07
 
         - Improve handling of iTunes tags.

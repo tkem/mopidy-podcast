@@ -17,7 +17,7 @@ setup(
     license='Apache License, Version 2.0',
     author='Thomas Kemmer',
     author_email='tkemmer@computer.org',
-    description='Mopidy extension for streaming Podcasts',
+    description='Mopidy extension for streaming podcasts',
     long_description=open('README.rst').read(),
     packages=find_packages(exclude=['tests', 'tests.*']),
     zip_safe=False,

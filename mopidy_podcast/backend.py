@@ -37,7 +37,7 @@ class PodcastBackend(pykka.ThreadingActor, backend.Backend):
 
         def update():
             logger.info('Updating %s directories', Extension.dist_name)
-            self.directory.refresh()
+            self.directory.refresh(async=True)
             if not self.actor_stopped.is_set():
                 self.timer = self._timer(update_interval, update)
             else:

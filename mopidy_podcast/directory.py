@@ -93,11 +93,9 @@ class PodcastDirectoryController(PodcastDirectory):
             result.update((ref.uri, ref) for ref in refs)
         return result.values()[:limit]
 
-    def refresh(self, uri=None):
-        # FIXME: always refresh asynchronously?
-        for proxy in self.proxies.values():
-            logger.debug('refresh %r', proxy)
-            proxy.refresh(uri)
+    def refresh(self, uri=None, async=False):
+        futures = [p.refresh(uri) for p in self.proxies.values()]
+        return pykka.get_all(futures) if async else None
 
     def stop(self):
         logger.info('Stopping %s directories', Extension.dist_name)

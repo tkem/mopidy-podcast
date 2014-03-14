@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
+import datetime
 import logging
+import re
 
 from mopidy import backend
 from mopidy.models import Album, Artist, Track, SearchResult
@@ -9,6 +11,8 @@ from . import PodcastDirectory
 from .models import Ref
 from .query import Query
 from .uritools import uridefrag
+
+REFNAME_RE = re.compile(r'[/"]')
 
 QUERY_MAP = {
     'any': None,
@@ -24,8 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 def _keyfunc(e):
-    from datetime import datetime
-    return e.pubdate if e.pubdate else datetime.min
+    return e.pubdate if e.pubdate else datetime.datetime.min
 
 
 class PodcastLibraryProvider(backend.LibraryProvider):
@@ -83,7 +86,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
 
     def _browse(self, uri):
         refs = []
-        # TODO: escape/replace '/' in names
         for ref in self.backend.directory.browse(uri):
             if ref.type == Ref.PODCAST:
                 ref = ref.copy(type=Ref.DIRECTORY)
@@ -91,14 +93,15 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 ref = ref.copy(type=Ref.TRACK)
             elif ref.type != Ref.DIRECTORY:
                 logger.warn('Unexpected browse result for %s: %r', uri, ref)
-            refs.append(ref)
+            # FIXME: replace '/', '"' in names for browsing - really necessary?
+            refs.append(ref.copy(name=REFNAME_RE.sub('_', ref.name or '')))
         return refs
 
     def _search(self, query=None):
         if query:
             if any(key not in QUERY_MAP for key in query.keys()):
                 return None
-            attribute = QUERY_MAP[query.keys()[0]]  # only single attribute
+            attribute = QUERY_MAP[query.keys()[0]]  # single attribute
             terms = [v for values in query.values() for v in values]
         else:
             attribute = terms = None
@@ -108,7 +111,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         tracks = []
         for ref in self.backend.directory.search(terms, attribute, limit):
             if ref.type == Ref.PODCAST:
-                # minimum album info only for performance reasons
+                # minimum album info for performance reasons
                 albums.append(Album(uri=ref.uri, name=ref.name))
             elif ref.type == Ref.EPISODE:
                 tracks.extend(self.lookup(ref.uri))
