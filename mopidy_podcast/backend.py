@@ -2,76 +2,63 @@ from __future__ import unicode_literals
 
 import logging
 import pykka
+import threading
 
 from mopidy import backend
 
 from . import Extension
-from .directory import PodcastDirectoryController
+from .controller import PodcastDirectoryController
+from .feeds import FeedsDirectory
 from .library import PodcastLibraryProvider
 from .playback import PodcastPlaybackProvider
-from .uritools import uridefrag
 
 logger = logging.getLogger(__name__)
 
 
 class PodcastBackend(pykka.ThreadingActor, backend.Backend):
 
+    # TODO: new uri scheme:
+    # - podcast://dirname/...
+    # - podcast+http://...
+    # - podcast+https://...
+    # blocked by https://github.com/mopidy/mopidy/issues/708
     uri_schemes = ['podcast']
 
-    registry = None
-
+    lock = threading.RLock()
     name = Extension.ext_name
+    registry = None
 
     def __init__(self, config, audio):
         super(PodcastBackend, self).__init__()
-        directories = self._directories(config[self.name]['directories'])
+        classes = [FeedsDirectory] if config[self.name]['feeds'] else []
+        classes.extend(self.registry[self.name + ':directory'])
+        timeout = config[self.name]['timeout']
 
         self.config = config
-        self.cache = self._cache(**config[self.name])
-        self.timeout = config[self.name]['timeout']
-        self.max_episodes = config[self.name]['max_episodes']
-        self.directory = PodcastDirectoryController(self, directories)
+        self.directory = PodcastDirectoryController(config, timeout, classes)
         self.library = PodcastLibraryProvider(backend=self)
         self.playback = PodcastPlaybackProvider(audio=audio, backend=self)
 
-        update_interval = config[self.name]['update_interval']
-
         def update():
             logger.info('Updating %s directories', Extension.dist_name)
-            self.directory.refresh(async=True)
-            if not self.actor_stopped.is_set():
-                self.timer = self._timer(update_interval, update)
-            else:
-                logger.debug('%s stopped during update', Extension.dist_name)
-
-        self.timer = self._timer(update_interval, update)
+            self.directory.update(async=True)
+            with self.lock:
+                interval = config[self.name]['update_interval']
+                self.timer = self._timer(interval, update)
+        update()
 
     def on_stop(self):
-        self.timer.cancel()
+        if not self.actor_stopped.is_set():
+            logger.error('%r stopped, but event not set', self)
+        with self.lock:
+            self.timer.cancel()
         self.directory.stop()
 
-    def get_stream_url(self, uri):
-        return uridefrag(uri).fragment
-
-    def _cache(self, cache_size=0, cache_ttl=0, **kwargs):
-        from .lrucache import LRUCache
-        if cache_size and cache_ttl:
-            return LRUCache(maxsize=cache_size, ttl=cache_ttl)
-        else:
-            return None
-
-    def _directories(self, names):
-        regdirs = {d.name: d for d in self.registry['podcast:directory']}
-        classes = []
-        for name in names:
-            if name in regdirs:
-                classes.append(regdirs[name])
-            else:
-                logger.warn('Podcast directory %s not found', name)
-        return classes
-
     def _timer(self, interval, func):
-        from threading import Timer
-        timer = Timer(interval, func)
+        if self.actor_stopped.is_set():
+            return None
+        if not interval:
+            return None
+        timer = threading.Timer(interval, func)
         timer.start()
         return timer

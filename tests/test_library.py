@@ -12,6 +12,7 @@ class LibraryTest(unittest.TestCase):
         'podcast': {
             'directories': [],
             'browse_label': None,
+            'browse_limit': None,
             'search_limit': None,
             'sort_order': 'desc',
             'update_interval': 86400,

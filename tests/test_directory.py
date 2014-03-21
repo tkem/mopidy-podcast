@@ -40,26 +40,26 @@ class DirectoryTest(unittest.TestCase):
     def test_browse(self):
         self.assertItemsEqual(
             self.directory.browse(None),
-            [Ref.directory(uri='podcast://test/', name='Test Directory')]
+            [Ref.directory(uri='//test', name='Test Directory')]
         )
         self.assertItemsEqual(
-            self.directory.browse('podcast://test/'),
-            [Ref.directory(uri='podcast://test/foo', name='bar')]
+            self.directory.browse('//test'),
+            [Ref.directory(uri='//test/foo', name='bar')]
         )
 
     def test_search(self):
         self.assertItemsEqual(
             self.directory.search(),
-            [Ref.podcast(uri='podcast://test/foo', name='bar')]
+            [Ref.podcast(uri='//test/foo', name='bar')]
         )
 
     def test_refresh(self):
         self.assertItemsEqual(
-            self.directory.browse('podcast://test/'),
-            [Ref.directory(uri='podcast://test/foo', name='bar')]
+            self.directory.browse('//test/'),
+            [Ref.directory(uri='//test/foo', name='bar')]
         )
         self.directory.refresh(),
         self.assertItemsEqual(
-            self.directory.browse('podcast://test/'),
-            [Ref.directory(uri='podcast://test/foo', name='baz')]
+            self.directory.browse('//test/'),
+            [Ref.directory(uri='//test/foo', name='baz')]
         )

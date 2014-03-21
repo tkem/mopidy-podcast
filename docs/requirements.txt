@@ -1,0 +1,3 @@
+Sphinx >= 1.0
+Mopidy >= 0.18
+glib
