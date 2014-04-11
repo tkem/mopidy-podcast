@@ -1,9 +1,16 @@
 Revision history for Mopidy-Podcast
 
+0.4.0   2014-04-11
+
+        - PodcastDirectory/Models API changes.
+
+        - Performance and stability improvements.
+
+        - Configuration cleanup.
+
 0.3.0   2014-03-14
 
         - Complete rewrite to integrate podcast directory extensions.
-
 
 0.2.0   2014-02-07
 
