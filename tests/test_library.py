@@ -10,15 +10,15 @@ from mopidy import core
 class LibraryTest(unittest.TestCase):
     config = {
         'podcast': {
-            'directories': [],
-            'browse_label': None,
+            'browse_label': '',
             'browse_limit': None,
             'search_limit': None,
             'sort_order': 'desc',
             'update_interval': 86400,
-            'cache_size': None,
-            'cache_ttl': None,
-            'timeout': None
+            'cache_size': 1,
+            'cache_ttl': 1,
+            'timeout': None,
+            'feeds': []
         }
     }
 

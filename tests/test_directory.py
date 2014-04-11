@@ -4,8 +4,8 @@ import unittest
 
 import pykka
 
-from mopidy_podcast import PodcastDirectory
-from mopidy_podcast.directory import PodcastDirectoryController
+from mopidy_podcast.directory import PodcastDirectory
+from mopidy_podcast.controller import PodcastDirectoryController
 from mopidy_podcast.models import Ref
 
 
@@ -15,24 +15,29 @@ class TestDirectory(PodcastDirectory):
 
     display_name = 'Test Directory'
 
-    def __init__(self, backend):
-        super(TestDirectory, self).__init__(backend)
+    def __init__(self, config, timeout):
+        super(TestDirectory, self).__init__(config, timeout)
         self.dirs = [Ref.directory(uri='foo', name='bar')]
 
-    def browse(self, uri):
+    def browse(self, uri, limit=None):
         return self.dirs
 
-    def search(self, terms=None, attribute=None, limit=None):
+    def search(self, terms=None, attribute=None, type=None, limit=None):
         return [Ref.podcast(uri='foo', name='bar')]
 
-    def refresh(self, uri=None):
+    def update(self):
         self.dirs = [Ref.directory(uri='foo', name='baz')]
 
 
 class DirectoryTest(unittest.TestCase):
 
     def setUp(self):
-        self.directory = PodcastDirectoryController(None, [TestDirectory])
+        self.directory = PodcastDirectoryController({
+            'podcast': {
+                'cache_size': 1,
+                'cache_ttl': 1
+            }
+        }, None, [TestDirectory])
 
     def tearDown(self):
         pykka.ActorRegistry.stop_all()
@@ -40,10 +45,10 @@ class DirectoryTest(unittest.TestCase):
     def test_browse(self):
         self.assertItemsEqual(
             self.directory.browse(None),
-            [Ref.directory(uri='//test', name='Test Directory')]
+            [Ref.directory(uri='//test/', name='Test Directory')]
         )
         self.assertItemsEqual(
-            self.directory.browse('//test'),
+            self.directory.browse('//test/'),
             [Ref.directory(uri='//test/foo', name='bar')]
         )
 
@@ -53,12 +58,12 @@ class DirectoryTest(unittest.TestCase):
             [Ref.podcast(uri='//test/foo', name='bar')]
         )
 
-    def test_refresh(self):
+    def test_update(self):
         self.assertItemsEqual(
             self.directory.browse('//test/'),
             [Ref.directory(uri='//test/foo', name='bar')]
         )
-        self.directory.refresh(),
+        self.directory.update(),
         self.assertItemsEqual(
             self.directory.browse('//test/'),
             [Ref.directory(uri='//test/foo', name='baz')]

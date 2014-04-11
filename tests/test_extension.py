@@ -17,10 +17,9 @@ class ExtensionTest(unittest.TestCase):
         ext = Extension()
 
         schema = ext.get_config_schema()
-        self.assertIn('directories', schema)
         self.assertIn('browse_label', schema)
+        self.assertIn('browse_limit', schema)
         self.assertIn('search_limit', schema)
-        self.assertIn('max_episodes', schema)
         self.assertIn('sort_order', schema)
         self.assertIn('update_interval', schema)
         self.assertIn('cache_size', schema)

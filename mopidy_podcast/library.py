@@ -92,7 +92,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             logger.error('Finding podcasts failed: %r', e)
 
     def search(self, query=None, uris=None):
-        logger.debug('query: %r', query)
         try:
             q = Query(query, exact=False) if query else None
             return self._search(q, self._config['search_limit'])

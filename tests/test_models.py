@@ -24,7 +24,6 @@ class ModelsTest(unittest.TestCase):
         self.assertEqual(podcast.complete, None)
         self.assertEqual(podcast.explicit, None)
         self.assertEqual(podcast.subtitle, 'A show about everything')
-        self.assertRegexpMatches(podcast.summary, '^All About Everything')
         self.assertItemsEqual(podcast.keywords, [])
         self.assertEqual(podcast.category, 'Technology')
 
@@ -39,10 +38,8 @@ class ModelsTest(unittest.TestCase):
         self.assertRegexpMatches(episode3.enclosure.url, 'Episode3.m4a$')
 
         self.assertEqual(episode3.author, 'John Doe')
-        self.assertEqual(episode3.block, None)
         self.assertEqual(episode3.explicit, None)
         self.assertRegexpMatches(episode3.subtitle, '^A short primer')
-        self.assertRegexpMatches(episode3.summary, 'salt and pepper shakers')
         self.assertEqual(episode3.duration, timedelta(minutes=7, seconds=4))
         self.assertItemsEqual(episode3.keywords, [])
         self.assertEqual(episode3.order, None)
@@ -55,10 +52,8 @@ class ModelsTest(unittest.TestCase):
         self.assertRegexpMatches(episode2.enclosure.url, 'Episode2.mp3$')
 
         self.assertEqual(episode2.author, 'Jane Doe')
-        self.assertEqual(episode2.block, None)
         self.assertEqual(episode2.explicit, None)
         self.assertRegexpMatches(episode2.subtitle, '^Comparing socket')
-        self.assertRegexpMatches(episode2.summary, 'socket wrenches')
         self.assertEqual(episode2.duration, timedelta(minutes=4, seconds=34))
         self.assertItemsEqual(episode2.keywords, [])
         self.assertEqual(episode2.order, None)
@@ -71,10 +66,8 @@ class ModelsTest(unittest.TestCase):
         self.assertRegexpMatches(episode1.enclosure.url, 'Episode1.mp3$')
 
         self.assertEqual(episode1.author, 'Various')
-        self.assertEqual(episode1.block, None)
         self.assertEqual(episode1.explicit, None)
         self.assertEqual(episode1.subtitle, 'Red + Blue != Purple')
-        self.assertRegexpMatches(episode1.summary, 'surviving')
         self.assertEqual(episode1.duration, timedelta(minutes=3, seconds=59))
         self.assertItemsEqual(episode1.keywords, [])
         self.assertEqual(episode1.order, None)

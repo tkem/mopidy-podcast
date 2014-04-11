@@ -23,8 +23,8 @@ class Extension(ext.Extension):
         schema['search_limit'] = config.Integer(optional=True, minimum=1)
         schema['sort_order'] = config.String(choices=['asc', 'desc'])
         schema['update_interval'] = config.Integer(minimum=1)
-        schema['cache_size'] = config.Integer(optional=True, minimum=1)
-        schema['cache_ttl'] = config.Integer(optional=True, minimum=1)
+        schema['cache_size'] = config.Integer(minimum=1)
+        schema['cache_ttl'] = config.Integer(minimum=1)
         schema['timeout'] = config.Integer(optional=True, minimum=1)
 
         # feeds directory provider config (optional)
