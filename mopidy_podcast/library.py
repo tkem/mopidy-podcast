@@ -153,10 +153,10 @@ class PodcastLibraryProvider(backend.LibraryProvider):
 
         tracks = []
         for index, e in enumerate(episodes, start=start):
-            if not e.enclosure or not e.enclosure.url:
+            if not e.enclosure or not e.enclosure.uri:
                 continue
             kwargs = {
-                'uri': uri + '#' + e.enclosure.url,
+                'uri': uri + '#' + e.enclosure.uri,
                 'name': e.title,
                 'album': album,
                 'artists': album.artists,
@@ -182,6 +182,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             kwargs['artists'] = [Artist(name=podcast.author)]
         if podcast.pubdate:
             kwargs['date'] = podcast.pubdate.date().isoformat()
-        if podcast.image and podcast.image.url:
-            kwargs['images'] = [podcast.image.url]
+        if podcast.image and podcast.image.uri:
+            kwargs['images'] = [podcast.image.uri]
         return Album(**kwargs)

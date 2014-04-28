@@ -35,7 +35,7 @@ class ModelsTest(unittest.TestCase):
         self.assertEqual(episode3.description, None)
         self.assertRegexpMatches(episode3.guid, '/aae20050615.m4a$')
         #self.assertEqual(episode3.pubdate, 'Wed, 15 Jun 2005 19:00:00 GMT')
-        self.assertRegexpMatches(episode3.enclosure.url, 'Episode3.m4a$')
+        self.assertRegexpMatches(episode3.enclosure.uri, 'Episode3.m4a$')
 
         self.assertEqual(episode3.author, 'John Doe')
         self.assertEqual(episode3.explicit, None)
@@ -49,7 +49,7 @@ class ModelsTest(unittest.TestCase):
         self.assertEqual(episode2.description, None)
         self.assertRegexpMatches(episode2.guid, '/aae20050608.mp3$')
         #self.assertEqual(episode2.pubdate, 'Wed, 8 Jun 2005 19:00:00 GMT')
-        self.assertRegexpMatches(episode2.enclosure.url, 'Episode2.mp3$')
+        self.assertRegexpMatches(episode2.enclosure.uri, 'Episode2.mp3$')
 
         self.assertEqual(episode2.author, 'Jane Doe')
         self.assertEqual(episode2.explicit, None)
@@ -63,7 +63,7 @@ class ModelsTest(unittest.TestCase):
         self.assertEqual(episode1.description, None)
         self.assertRegexpMatches(episode1.guid, '/aae20050601.mp3$')
         #self.assertEqual(episode1.pubdate, 'Wed, 1 Jun 2005 19:00:00 GMT')
-        self.assertRegexpMatches(episode1.enclosure.url, 'Episode1.mp3$')
+        self.assertRegexpMatches(episode1.enclosure.uri, 'Episode1.mp3$')
 
         self.assertEqual(episode1.author, 'Various')
         self.assertEqual(episode1.explicit, None)

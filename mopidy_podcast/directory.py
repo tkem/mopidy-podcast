@@ -59,9 +59,9 @@ class PodcastDirectory(object):
         for e in self.get(uri).episodes:
             if limit and len(refs) >= limit:
                 break
-            if not e.enclosure or not e.enclosure.url:
+            if not e.enclosure or not e.enclosure.uri:
                 continue
-            ref = Ref.episode(uri=uri+'#'+e.enclosure.url, name=e.title)
+            ref = Ref.episode(uri=uri+'#'+e.enclosure.uri, name=e.title)
             refs.append(ref)
         return refs
 

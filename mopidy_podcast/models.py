@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import collections
 import datetime
 import email.utils
 import re
@@ -61,18 +60,19 @@ def _to_wordlist(e):
 
 
 def _to_image(e):
-    return Podcast.Image(
-        e.get('url'), e.get('title'), e.get('link'),
-        e.get('width'), e.get('height'), e.get('description')
-    )
+    kwargs = {}
+    kwargs['uri'] = e.get('url', e.get('href'))
+    for name in ('title', 'link', 'width', 'height', 'description'):
+        kwargs[name] = e.get(name)
+    return Image(**kwargs)
 
 
 def _to_enclosure(e):
-    return Episode.Enclosure(e.get('url'), e.get('length'), e.get('type'))
-
-
-def _by_pubdate(episode):
-    return episode.pubdate if episode.pubdate else datetime.datetime.min
+    return Enclosure(
+        uri=e.get('url'),
+        length=e.get('length'),
+        type=e.get('type')
+    )
 
 
 def _to_episode(e):
@@ -90,16 +90,34 @@ def _to_episode(e):
     return Episode(**kwargs)
 
 
+def _by_pubdate(episode):
+    return episode.pubdate if episode.pubdate else datetime.datetime.min
+
+
+class Image(mopidy.models.ImmutableObject):
+    """Mopidy model type to represent a podcast's image."""
+
+    uri = None
+    """The image's URI."""
+
+    title = None
+    """The image's title."""
+
+    link = None
+    """The URL of the site the image links to."""
+
+    width = None
+    """The image's width in pixels."""
+
+    height = None
+    """The image's height in pixels."""
+
+    description = None
+    """A description of the image or the site it links to."""
+
+
 class Podcast(mopidy.models.ImmutableObject):
     """Mopidy model type to represent a podcast."""
-
-    Image = collections.namedtuple(
-        'Image', 'url title link width height description'
-    )
-    """A :class:`collections.namedtuple` subclass to represent a podcast's
-    image.
-
-    """
 
     # standard RSS tags
 
@@ -191,14 +209,21 @@ class Podcast(mopidy.models.ImmutableObject):
         return cls(**kwargs)
 
 
+class Enclosure(mopidy.models.ImmutableObject):
+    """Mopidy model type to represent an episode's media object."""
+
+    uri = None
+    """The URI of the media object."""
+
+    length = None
+    """The size of the media object in bytes."""
+
+    type = None
+    """The MIME type of the media object, e.g. `audio/mpeg`."""
+
+
 class Episode(mopidy.models.ImmutableObject):
     """Mopidy model type to represent a podcast episode."""
-
-    Enclosure = collections.namedtuple('Enclosure', 'url length type')
-    """A :class:`collections.namedtuple` subclass to represent an
-    episode's enclosure.
-
-    """
 
     # standard RSS tags
 
