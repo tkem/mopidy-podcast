@@ -61,9 +61,11 @@ def _to_wordlist(e):
 
 def _to_image(e):
     kwargs = {}
-    kwargs['uri'] = e.get('url', e.get('href'))
+    # handle both RSS and itunes images
+    kwargs['uri'] = e.get('href', _gettag(e, 'url'))
+    # these are only valid for RSS images
     for name in ('title', 'link', 'width', 'height', 'description'):
-        kwargs[name] = e.get(name)
+        kwargs[name] = _gettag(e, name)
     return Image(**kwargs)
 
 
@@ -77,16 +79,18 @@ def _to_enclosure(e):
 
 def _to_episode(e):
     kwargs = {}
+    # standard RSS tags
     for name in ('title', 'link', 'description', 'guid'):
         kwargs[name] = _gettag(e, name)
     kwargs['pubdate'] = _gettag(e, 'pubDate', _to_datetime)
     kwargs['enclosure'] = _gettag(e, 'enclosure', _to_enclosure)
+    # itunes tags
     for name in ('author', 'explicit', 'subtitle'):
         kwargs[name] = _gettag(e, 'itunes:' + name)
-    # TODO: <itunes:summary> vs. <description>
+    kwargs['image'] = _gettag(e, 'itunes:image', _to_image)
     kwargs['duration'] = _gettag(e, 'itunes:duration', _to_timedelta)
-    kwargs['keywords'] = _gettag(e, 'itunes:keywords', _to_wordlist)
     kwargs['order'] = _gettag(e, 'itunes:order', lambda e: int(e.text))
+    kwargs['keywords'] = _gettag(e, 'itunes:keywords', _to_wordlist)
     return Episode(**kwargs)
 
 
@@ -114,6 +118,19 @@ class Image(mopidy.models.ImmutableObject):
 
     description = None
     """A description of the image or the site it links to."""
+
+
+class Enclosure(mopidy.models.ImmutableObject):
+    """Mopidy model type to represent an episode's media object."""
+
+    uri = None
+    """The URI of the media object."""
+
+    length = None
+    """The size of the media object in bytes."""
+
+    type = None
+    """The MIME type of the media object, e.g. `audio/mpeg`."""
 
 
 class Podcast(mopidy.models.ImmutableObject):
@@ -150,25 +167,43 @@ class Podcast(mopidy.models.ImmutableObject):
     author = None
     """The podcast author's name."""
 
-    complete = None
-    """Indicates completion of the podcast."""
+    # TODO
+    # block = None
+    # """Prevent an episode or podcast from appearing."""
+
+    # TODO: sub-categories
+    category = None
+    """The top-level category of the podcast."""
 
     explicit = None
     """Indicates whether the podcast contains explicit material."""
 
+    complete = None
+    """Indicates completion of the podcast."""
+
+    # TODO
+    # newfeedurl = None
+    # """Used to inform of new feed URL location."""
+
+    # TODO
+    # owner = None
+    # """Used for contact only."""
+
     subtitle = None
     """A short description of the podcast."""
 
-    keywords = frozenset()
-    """A list of keywords associated with the podcast."""
+    # TODO
+    # summary = None
+    # """Description column."""
 
-    category = None
-    """The top-level category of the podcast."""
+    keywords = frozenset()
+    """A set of keywords to associate with the podcast."""
 
     # episodes
 
     episodes = tuple()
-    """The podcast's episodes as a read-only :class:`tuple`.
+    """The podcast's episodes as a read-only :class:`tuple` of
+    :class:`Episode` instances.
 
     By default, i.e. when using :meth:`Podcast.parse` to create a
     :class:`Podcast`, a podcast's episodes are sorted by descending
@@ -195,31 +230,23 @@ class Podcast(mopidy.models.ImmutableObject):
         channel = ET.parse(source).find('channel')
 
         kwargs = {}
+        # standard RSS tags
         for name in ('title', 'link', 'description', 'language', 'copyright'):
             kwargs[name] = _gettag(channel, name)
         kwargs['pubdate'] = _gettag(channel, 'pubDate', _to_datetime)
         kwargs['image'] = _gettag(channel, 'image', _to_image)
+        # itunes tags
         for name in ('author', 'complete', 'explicit', 'subtitle'):
             kwargs[name] = _gettag(channel, 'itunes:' + name)
-        # TODO: <itunes:summary> vs. <description>
-        kwargs['keywords'] = _gettag(channel, 'itunes:keywords', _to_wordlist)
+        # TBD: prefer itunes image over RSS image?
+        if not kwargs['image']:
+            kwargs['image'] = _gettag(channel, 'itunes:image', _to_image)
         kwargs['category'] = _gettag(channel, 'itunes:category', _to_category)
+        kwargs['keywords'] = _gettag(channel, 'itunes:keywords', _to_wordlist)
+        # episodes - sorted by pubdate
         kwargs['episodes'] = [_to_episode(e) for e in channel.iter(tag='item')]
         kwargs['episodes'].sort(key=_by_pubdate, reverse=True)
         return cls(**kwargs)
-
-
-class Enclosure(mopidy.models.ImmutableObject):
-    """Mopidy model type to represent an episode's media object."""
-
-    uri = None
-    """The URI of the media object."""
-
-    length = None
-    """The size of the media object in bytes."""
-
-    type = None
-    """The MIME type of the media object, e.g. `audio/mpeg`."""
 
 
 class Episode(mopidy.models.ImmutableObject):
@@ -253,20 +280,34 @@ class Episode(mopidy.models.ImmutableObject):
     author = None
     """The episode author's name."""
 
-    explicit = None
-    """Indicates whether the episode contains explicit material."""
+    # TODO
+    # block = None
+    # """Prevent an episode or podcast from appearing."""
 
-    subtitle = None
-    """A short description of the episode."""
+    image = None
+    """An image to be displayed with the episode as an instance of
+    :class:`Image`.
+
+    """
 
     duration = None
     """The episode's duration as a :class:`datetime.timedelta`."""
 
-    keywords = frozenset()
-    """A list of keywords associated with the episode."""
+    explicit = None
+    """Indicates whether the episode contains explicit material."""
 
     order = None
-    """Can be used to override the default ordering of episodes."""
+    """Overrides the default ordering of episodes."""
+
+    subtitle = None
+    """A short description of the episode."""
+
+    # TODO
+    # summary = None
+    # """Description column."""
+
+    keywords = frozenset()
+    """A list of keywords associated with the episode."""
 
     def __init__(self, *args, **kwargs):
         self.__dict__['keywords'] = frozenset(

@@ -6,6 +6,8 @@ from mopidy_podcast.models import Podcast
 from datetime import timedelta
 from . import datapath
 
+BASE_URI = 'http://example.com/podcasts/everything/'
+URI_PREFIX = BASE_URI + 'AllAboutEverything'
 
 class ModelsTest(unittest.TestCase):
 
@@ -18,7 +20,7 @@ class ModelsTest(unittest.TestCase):
         self.assertEqual(podcast.language, 'en-us')
         self.assertRegexpMatches(podcast.copyright, 'John Doe & Family')
         self.assertEqual(podcast.pubdate, None)
-        self.assertEqual(podcast.image, None)
+        self.assertEqual(podcast.image.uri, URI_PREFIX + '.jpg')
 
         self.assertEqual(podcast.author, 'John Doe')
         self.assertEqual(podcast.complete, None)
@@ -38,6 +40,7 @@ class ModelsTest(unittest.TestCase):
         self.assertRegexpMatches(episode3.enclosure.uri, 'Episode3.m4a$')
 
         self.assertEqual(episode3.author, 'John Doe')
+        self.assertEqual(episode3.image.uri, URI_PREFIX + '/Episode1.jpg')
         self.assertEqual(episode3.explicit, None)
         self.assertRegexpMatches(episode3.subtitle, '^A short primer')
         self.assertEqual(episode3.duration, timedelta(minutes=7, seconds=4))
@@ -52,6 +55,7 @@ class ModelsTest(unittest.TestCase):
         self.assertRegexpMatches(episode2.enclosure.uri, 'Episode2.mp3$')
 
         self.assertEqual(episode2.author, 'Jane Doe')
+        self.assertEqual(episode2.image.uri, URI_PREFIX + '/Episode2.jpg')
         self.assertEqual(episode2.explicit, None)
         self.assertRegexpMatches(episode2.subtitle, '^Comparing socket')
         self.assertEqual(episode2.duration, timedelta(minutes=4, seconds=34))
@@ -66,6 +70,7 @@ class ModelsTest(unittest.TestCase):
         self.assertRegexpMatches(episode1.enclosure.uri, 'Episode1.mp3$')
 
         self.assertEqual(episode1.author, 'Various')
+        self.assertEqual(episode3.image.uri, URI_PREFIX + '/Episode1.jpg')
         self.assertEqual(episode1.explicit, None)
         self.assertEqual(episode1.subtitle, 'Red + Blue != Purple')
         self.assertEqual(episode1.duration, timedelta(minutes=3, seconds=59))
