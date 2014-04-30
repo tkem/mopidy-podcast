@@ -35,7 +35,7 @@ class FeedsDirectory(PodcastDirectory):
         else:
             return super(FeedsDirectory, self).browse(uri, limit)
 
-    def search(self, terms=None, attribute=None, type=None, limit=None):
+    def search(self, terms=None, attr=None, type=None, uri=None, limit=None):
         if type == Ref.PODCAST:
             entries = iter(self._podcasts)
         elif type == Ref.EPISODE:
@@ -49,7 +49,7 @@ class FeedsDirectory(PodcastDirectory):
         for e in entries:
             if limit and len(refs) >= limit:
                 break
-            if all(term in e.index.get(attribute, '') for term in terms):
+            if all(term in e.index.get(attr, '') for term in terms):
                 refs.append(e.ref)
         return refs
 

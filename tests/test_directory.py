@@ -22,7 +22,7 @@ class TestDirectory(PodcastDirectory):
     def browse(self, uri, limit=None):
         return self.dirs
 
-    def search(self, terms=None, attribute=None, type=None, limit=None):
+    def search(self, terms, attr=None, type=None, uri=None, limit=None):
         return [Ref.podcast(uri='foo', name='bar')]
 
     def update(self):
@@ -54,7 +54,7 @@ class DirectoryTest(unittest.TestCase):
 
     def test_search(self):
         self.assertItemsEqual(
-            self.directory.search(),
+            self.directory.search([]),
             [Ref.podcast(uri='//test/foo', name='bar')]
         )
 

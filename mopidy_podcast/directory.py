@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
-from .models import Podcast, Ref
+from .models import Podcast, Episode, Ref
+
 
 class PodcastDirectory(object):
     """Podcast directory interface.
@@ -65,12 +66,31 @@ class PodcastDirectory(object):
             refs.append(ref)
         return refs
 
-    def search(self, terms=None, attribute=None, type=None, limit=None):
+    def search(self, terms, attr=None, type=None, uri=None, limit=None):
         """Search for podcasts and/or episodes where `attribute`
         contains `terms`.
 
         """
-        return None
+        import operator
+        terms = [term.lower() for term in terms]
+        if attr is None:
+            getter = operator.attrgetter('title', 'author', 'description')
+        elif hasattr(Episode, attr):
+            getter = operator.attrgetter(attr)
+        else:
+            return None
+        if type is not None and type != Ref.EPISODE:
+            return None
+        refs = []
+        for e in self.get(uri).episodes:
+            if limit and len(refs) >= limit:
+                break
+            if not e.enclosure or not e.enclosure.uri:
+                continue
+            if all(term in unicode(getter(e) or '').lower() for term in terms):
+                ref = Ref.episode(uri=uri+'#'+e.enclosure.uri, name=e.title)
+                refs.append(ref)
+        return refs
 
     def update(self):
         """Update the podcast directory."""

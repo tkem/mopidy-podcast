@@ -87,14 +87,14 @@ class PodcastLibraryProvider(backend.LibraryProvider):
     def find_exact(self, query=None, uris=None):
         try:
             q = Query(query, exact=True) if query else None
-            return self._search(q, self._config['search_limit'])
+            return self._search(q, uris, self._config['search_limit'])
         except Exception as e:
             logger.error('Finding podcasts failed: %r', e)
 
     def search(self, query=None, uris=None):
         try:
             q = Query(query, exact=False) if query else None
-            return self._search(q, self._config['search_limit'])
+            return self._search(q, uris, self._config['search_limit'])
         except Exception as e:
             logger.error('Searching podcasts failed: %r', e)
 
@@ -112,28 +112,32 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         return refs
 
     @debug_timer(logger, 'Searching podcasts')
-    def _search(self, query=None, limit=None):
+    def _search(self, query=None, uris=None, limit=None):
         if query:
             if len(query) > 1 or query.keys()[0] not in _QUERY_MAPPING:
                 return None
             terms = [v for values in query.values() for v in values]
-            attribute, type = _QUERY_MAPPING[query.keys()[0]]
+            attr, type = _QUERY_MAPPING[query.keys()[0]]
         else:
-            terms = attribute = type = None
-        refs = self.backend.directory.search(terms, attribute, type, limit)
+            terms = attr = type = None
+        directory = self.backend.directory
 
         albums = []
         tracks = []
-        # sort by uri to improve lookup cache performance
-        for ref in sorted(refs, key=operator.attrgetter('uri')):
-            if ref.type == Ref.PODCAST:
-                # only minimum album info for performance reasons
-                albums.append(Album(uri=_wrap(ref).uri, name=ref.name))
-            elif ref.type == Ref.EPISODE:
-                # lookup also preloads tracks into cache
-                tracks.extend(self.lookup(_wrap(ref).uri))
-            else:
-                logger.warn('Unexpected podcast search result: %r', ref)
+        for uri in (uris or [None]):
+            path = urisplit(uri).getpath() if uri else None
+            # TODO: adapt limit for multiple uris
+            refs = directory.search(terms, attr, type, path, limit)
+            # sort by uri to improve lookup cache performance
+            for ref in sorted(refs, key=operator.attrgetter('uri')):
+                if ref.type == Ref.PODCAST:
+                    # only minimum album info for performance reasons
+                    albums.append(Album(uri=_wrap(ref).uri, name=ref.name))
+                elif ref.type == Ref.EPISODE:
+                    # lookup also preloads tracks into cache
+                    tracks.extend(self.lookup(_wrap(ref).uri))
+                else:
+                    logger.warn('Unexpected podcast search result: %r', ref)
         # filter results for exact queries only
         if query and query.exact:
             albums = [album for album in albums if query.match_album(album)]

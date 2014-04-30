@@ -38,9 +38,9 @@ class PodcastDirectoryActor(pykka.ThreadingActor):
         with DebugTimer(logger, 'Browsing %s in %s' % (uri, self.directory)):
             return self.directory.browse(uri, limit)
 
-    def search(self, terms=None, attribute=None, type=None, limit=None):
+    def search(self, terms, attr=None, type=None, uri=None, limit=None):
         with DebugTimer(logger, 'Searching %s' % self.directory):
-            return self.directory.search(terms, attribute, type, limit)
+            return self.directory.search(terms, attr, type, uri, limit)
 
     def update(self):
         with DebugTimer(logger, 'Updating %s' % self.directory):
@@ -84,10 +84,24 @@ class PodcastDirectoryController(PodcastDirectory):
             return [_transform(base, ref) for ref in future.get()]
         return super(PodcastDirectoryController, self).browse(uri, limit)
 
-    def search(self, terms=None, attribute=None, type=None, limit=None):
-        proxies = [self.proxies[name] for name in self.names]
-        futures = [p.search(terms, attribute, type, limit) for p in proxies]
-        results = zip(self.names, futures)
+    def search(self, terms, attr=None, type=None, uri=None, limit=None):
+        if not uri:
+            proxies = [self.proxies[name] for name in self.names]
+            futures = [p.search(terms, attr, type, None, limit) for p in proxies]  # noqa
+            results = zip(self.names, futures)
+        elif uri.startswith('//'):
+            base = urisplit(uri)
+            logger.debug('Search URI: %r', base)
+            proxy = self.proxies[base.authority]
+            future = proxy.search(
+                terms, attr, type, uriunsplit((None, None) + base[2:]), limit
+            )
+            results = [(base.authority, future)]
+        else:
+            return super(PodcastDirectoryController, self).search(
+                terms, attr, type, uri, limit
+            )
+
         # merge results and filter duplicates, but keep order
         result = collections.OrderedDict()
         for name, future in results:
@@ -98,7 +112,7 @@ class PodcastDirectoryController(PodcastDirectory):
                 continue
             if not refs:
                 continue
-            base = urisplit('//' + name)
+            base = urisplit('//' + name)  # TODO: put base in results
             for ref in refs:
                 if limit and len(result) >= limit:
                     break
