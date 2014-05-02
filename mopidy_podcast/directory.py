@@ -52,18 +52,17 @@ class PodcastDirectory(object):
         from urllib2 import urlopen
 
         with closing(urlopen(uri, timeout=self.__timeout)) as source:
-            return Podcast.parse(source)
+            return Podcast.parse(source, uri)
 
     def browse(self, uri, limit=None):
         """Browse directories, podcasts and episodes at the given `uri`."""
         refs = []
         for e in self.get(uri).episodes:
+            if not e.uri:
+                continue
             if limit and len(refs) >= limit:
                 break
-            if not e.enclosure or not e.enclosure.uri:
-                continue
-            ref = Ref.episode(uri=uri+'#'+e.enclosure.uri, name=e.title)
-            refs.append(ref)
+            refs.append(Ref.episode(uri=e.uri, name=e.title))
         return refs
 
     def search(self, terms, attr=None, type=None, uri=None, limit=None):
@@ -83,13 +82,12 @@ class PodcastDirectory(object):
             return None
         refs = []
         for e in self.get(uri).episodes:
+            if not e.uri:
+                continue
             if limit and len(refs) >= limit:
                 break
-            if not e.enclosure or not e.enclosure.uri:
-                continue
             if all(term in unicode(getter(e) or '').lower() for term in terms):
-                ref = Ref.episode(uri=uri+'#'+e.enclosure.uri, name=e.title)
-                refs.append(ref)
+                refs.append(Ref.episode(uri=e.uri, name=e.title))
         return refs
 
     def update(self):

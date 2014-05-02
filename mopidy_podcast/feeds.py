@@ -84,8 +84,7 @@ class FeedsDirectory(PodcastDirectory):
         return self.Entry(ref, index, podcast.pubdate)
 
     def _index_episode(self, episode, feedurl, defaults):
-        uri = feedurl + '#' + episode.enclosure.uri
-        ref = Ref.episode(uri=uri, name=episode.title)
+        ref = Ref.episode(uri=episode.uri, name=episode.title)
         index = defaults.copy()
         if episode.title:
             index[PodcastDirectory.TITLE] = episode.title.lower()

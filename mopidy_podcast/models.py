@@ -77,7 +77,7 @@ def _to_enclosure(e):
     )
 
 
-def _to_episode(e):
+def _to_episode(e, feedurl):
     kwargs = {}
     # standard RSS tags
     for name in ('title', 'link', 'description', 'guid'):
@@ -91,6 +91,9 @@ def _to_episode(e):
     kwargs['duration'] = _gettag(e, 'itunes:duration', _to_timedelta)
     kwargs['order'] = _gettag(e, 'itunes:order', lambda e: int(e.text))
     kwargs['keywords'] = _gettag(e, 'itunes:keywords', _to_wordlist)
+    # add uri if valid
+    if feedurl and kwargs['enclosure'] and kwargs['enclosure'].uri:
+        kwargs['uri'] = feedurl + '#' + kwargs['enclosure'].uri
     return Episode(**kwargs)
 
 
@@ -135,6 +138,15 @@ class Enclosure(mopidy.models.ImmutableObject):
 
 class Podcast(mopidy.models.ImmutableObject):
     """Mopidy model type to represent a podcast."""
+
+    uri = None
+    """The podcast URI.
+
+    The URI *MUST NOT* contain a fragment identifier.  For podcasts
+    distributed as RSS feeds, this is the URL from which the RSS feed
+    can be retrieved.
+
+    """
 
     # standard RSS tags
 
@@ -221,7 +233,7 @@ class Podcast(mopidy.models.ImmutableObject):
         super(Podcast, self).__init__(*args, **kwargs)
 
     @classmethod
-    def parse(cls, source):
+    def parse(cls, source, uri=None):
         """Parse an RSS feed from a file-like `source` object into a
         :class:`Podcast`.
 
@@ -230,6 +242,8 @@ class Podcast(mopidy.models.ImmutableObject):
         channel = ET.parse(source).find('channel')
 
         kwargs = {}
+        # strip superfluous fragment from feedurl
+        kwargs['uri'] = uri.partition('#')[0] if uri else None
         # standard RSS tags
         for name in ('title', 'link', 'description', 'language', 'copyright'):
             kwargs[name] = _gettag(channel, name)
@@ -243,14 +257,26 @@ class Podcast(mopidy.models.ImmutableObject):
             kwargs['image'] = _gettag(channel, 'itunes:image', _to_image)
         kwargs['category'] = _gettag(channel, 'itunes:category', _to_category)
         kwargs['keywords'] = _gettag(channel, 'itunes:keywords', _to_wordlist)
-        # episodes - sorted by pubdate
-        kwargs['episodes'] = [_to_episode(e) for e in channel.iter(tag='item')]
-        kwargs['episodes'].sort(key=_by_pubdate, reverse=True)
+        # episodes sorted by pubdate
+        episodes = []
+        for item in channel.iter(tag='item'):
+            # TODO: filter by media type?
+            episodes.append(_to_episode(item, kwargs['uri']))
+        kwargs['episodes'] = sorted(episodes, key=_by_pubdate, reverse=True)
         return cls(**kwargs)
 
 
 class Episode(mopidy.models.ImmutableObject):
     """Mopidy model type to represent a podcast episode."""
+
+    uri = None
+    """The episode URI.
+
+    If the episode contains an enclosure, the episode URI *MUST* be
+    the associated podcast URI with the enclosure URL appended as a
+    fragment identifier.
+
+    """
 
     # standard RSS tags
 
@@ -330,27 +356,12 @@ class Ref(mopidy.models.Ref):
 
     @classmethod
     def podcast(cls, **kwargs):
-        """Create a :class:`Ref` with :attr:`type` :attr:`PODCAST`.
-
-        A :const:`uri` keyword argument *MUST* be the podcast's RSS
-        feed URL, and *MUST NOT* contain a fragment component.
-
-        """
-        if 'uri' in kwargs and '#' in kwargs['uri']:
-            raise ValueError('Invalid podcast URI: %s' % kwargs['uri'])
+        """Create a :class:`Ref` with :attr:`type` :attr:`PODCAST`."""
         kwargs['type'] = Ref.PODCAST
         return cls(**kwargs)
 
     @classmethod
     def episode(cls, **kwargs):
-        """Create a :class:`Ref` with :attr:`type` :attr:`EPISODE`.
-
-        A :const:`uri` keyword argument *MUST* be the podcast's RSS
-        feed URL with the episode's enclosure URL appended as the
-        fragment.
-
-        """
-        if 'uri' in kwargs and '#' not in kwargs['uri']:
-            raise ValueError('Invalid episode URI: %s' % kwargs['uri'])
+        """Create a :class:`Ref` with :attr:`type` :attr:`EPISODE`."""
         kwargs['type'] = Ref.EPISODE
         return cls(**kwargs)

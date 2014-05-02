@@ -157,10 +157,10 @@ class PodcastLibraryProvider(backend.LibraryProvider):
 
         tracks = []
         for index, e in enumerate(episodes, start=start):
-            if not e.enclosure or not e.enclosure.uri:
+            if not e.uri:
                 continue
             kwargs = {
-                'uri': uri + '#' + e.enclosure.uri,
+                'uri': uri + '#' + e.enclosure.uri,  # TODO
                 'name': e.title,
                 'album': album,
                 'artists': album.artists,
