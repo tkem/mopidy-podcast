@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def _by_pubdate(e):
-    return e.pubdate if e.pubdate else datetime.datetime.min
+    return e.pubdate or ''
 
 
 class FeedsDirectory(PodcastDirectory):

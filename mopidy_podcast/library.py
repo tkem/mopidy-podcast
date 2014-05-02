@@ -170,9 +170,9 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             if e.author:
                 kwargs['artists'] = [Artist(name=e.author)]
             if e.pubdate:
-                kwargs['date'] = e.pubdate.date().isoformat()
+                kwargs['date'], _, _ = e.pubdate.partition('T')
             if e.duration:
-                kwargs['length'] = int(e.duration.total_seconds() * 1000)
+                kwargs['length'] = e.duration
             tracks.append(Track(**kwargs))
         return tracks
 
@@ -185,7 +185,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         if podcast.author:
             kwargs['artists'] = [Artist(name=podcast.author)]
         if podcast.pubdate:
-            kwargs['date'] = podcast.pubdate.date().isoformat()
+            kwargs['date'], _, _ = podcast.pubdate.partition('T')
         if podcast.image and podcast.image.uri:
             kwargs['images'] = [podcast.image.uri]
         return Album(**kwargs)

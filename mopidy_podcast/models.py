@@ -31,24 +31,25 @@ def _gettag(etree, tag, convert=None, namespaces=_NAMESPACES):
         return None
 
 
-def _to_datetime(e):
+def _to_isoformat(e):
     try:
-        timestamp = email.utils.mktime_tz(email.utils.parsedate_tz(e.text))
+        t = email.utils.mktime_tz(email.utils.parsedate_tz(e.text))
     except AttributeError:
         return None
     except TypeError:
         return None
-    return datetime.datetime.fromtimestamp(timestamp)
+    return datetime.datetime.utcfromtimestamp(t).isoformat() + 'Z'
 
 
-def _to_timedelta(e):
+def _to_milliseconds(e):
     try:
         groups = _DURATION_RE.match(e.text).groupdict('0')
     except AttributeError:
         return None
     except TypeError:
         return None
-    return datetime.timedelta(**{k: int(v) for k, v in groups.items()})
+    d = datetime.timedelta(**{k: int(v) for k, v in groups.items()})
+    return int(d.total_seconds() * 1000)
 
 
 def _to_category(e):
@@ -82,13 +83,13 @@ def _to_episode(e, feedurl):
     # standard RSS tags
     for name in ('title', 'link', 'description', 'guid'):
         kwargs[name] = _gettag(e, name)
-    kwargs['pubdate'] = _gettag(e, 'pubDate', _to_datetime)
+    kwargs['pubdate'] = _gettag(e, 'pubDate', _to_isoformat)
     kwargs['enclosure'] = _gettag(e, 'enclosure', _to_enclosure)
     # itunes tags
     for name in ('author', 'explicit', 'subtitle'):
         kwargs[name] = _gettag(e, 'itunes:' + name)
     kwargs['image'] = _gettag(e, 'itunes:image', _to_image)
-    kwargs['duration'] = _gettag(e, 'itunes:duration', _to_timedelta)
+    kwargs['duration'] = _gettag(e, 'itunes:duration', _to_milliseconds)
     kwargs['order'] = _gettag(e, 'itunes:order', lambda e: int(e.text))
     kwargs['keywords'] = _gettag(e, 'itunes:keywords', _to_wordlist)
     # add uri if valid
@@ -98,7 +99,7 @@ def _to_episode(e, feedurl):
 
 
 def _by_pubdate(episode):
-    return episode.pubdate if episode.pubdate else datetime.datetime.min
+    return episode.pubdate or ''
 
 
 class Image(mopidy.models.ImmutableObject):
@@ -166,7 +167,7 @@ class Podcast(mopidy.models.ImmutableObject):
     """The podcast's copyright notice."""
 
     pubdate = None
-    """The podcast's publication date as a :class:`datetime.datetime`."""
+    """The podcast's publication date and time in ISO 8601 format."""
 
     image = None
     """An image to be displayed with the podcast as an instance of
@@ -247,7 +248,7 @@ class Podcast(mopidy.models.ImmutableObject):
         # standard RSS tags
         for name in ('title', 'link', 'description', 'language', 'copyright'):
             kwargs[name] = _gettag(channel, name)
-        kwargs['pubdate'] = _gettag(channel, 'pubDate', _to_datetime)
+        kwargs['pubdate'] = _gettag(channel, 'pubDate', _to_isoformat)
         kwargs['image'] = _gettag(channel, 'image', _to_image)
         # itunes tags
         for name in ('author', 'complete', 'explicit', 'subtitle'):
@@ -293,7 +294,7 @@ class Episode(mopidy.models.ImmutableObject):
     """A string that uniquely identifies the episode."""
 
     pubdate = None
-    """The episode's publication date as a :class:`datetime.datetime`."""
+    """The episode's publication date and time in ISO 8601 format."""
 
     enclosure = None
     """The media object, e.g. the audio stream, attached to the episode as
@@ -317,7 +318,7 @@ class Episode(mopidy.models.ImmutableObject):
     """
 
     duration = None
-    """The episode's duration as a :class:`datetime.timedelta`."""
+    """The episode's duration in milliseconds."""
 
     explicit = None
     """Indicates whether the episode contains explicit material."""
