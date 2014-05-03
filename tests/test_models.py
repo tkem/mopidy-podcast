@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 import unittest
 
 from mopidy_podcast.models import Podcast
-from datetime import timedelta
 from . import datapath
 
 BASE_URL = 'http://example.com/podcasts/everything/'

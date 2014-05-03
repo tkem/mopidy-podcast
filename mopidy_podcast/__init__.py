@@ -40,5 +40,9 @@ class Extension(ext.Extension):
 
     def setup(self, registry):
         from .backend import PodcastBackend
+        from .feeds import FeedsDirectory
+
         registry.add('backend', PodcastBackend)
-        PodcastBackend.registry = registry
+        registry.add('podcast:directory', FeedsDirectory)
+
+        PodcastBackend.directories = registry['podcast:directory']

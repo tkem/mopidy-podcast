@@ -18,16 +18,14 @@ class LibraryTest(unittest.TestCase):
             'cache_size': 1,
             'cache_ttl': 1,
             'timeout': None,
-            'feeds': []
+            'feeds': [],
+            'feeds_label': 'feeds'
         }
     }
 
     def setUp(self):
-        PodcastBackend.registry = {'podcast:directory': []}
-        self.backend = PodcastBackend.start(
-            config=self.config, audio=None).proxy()
-        self.core = core.Core(backends=[self.backend])
-        self.library = self.core.library
+        self.backend = PodcastBackend.start(self.config, None).proxy()
+        self.library = core.Core(backends=[self.backend]).library
 
     def tearDown(self):
         pykka.ActorRegistry.stop_all()

@@ -6,19 +6,20 @@ import operator
 from mopidy import backend
 from mopidy.models import Album, Artist, Track, SearchResult
 
-from .directory import PodcastDirectory
+from . import Extension
 from .models import Ref
 from .query import Query
 from .timers import debug_timer
-from .uritools import uridefrag, urisplit, uriencode
+from .uritools import uridefrag
 
 _QUERY_MAPPING = {
-    'album': (PodcastDirectory.TITLE, Ref.PODCAST),
-    'albumartist': (PodcastDirectory.AUTHOR, Ref.PODCAST),
-    'artist': (PodcastDirectory.AUTHOR, Ref.EPISODE),
-    'comment': (PodcastDirectory.DESCRIPTION, None),
-    'genre': (PodcastDirectory.CATEGORY, None),  # FIXME: PODCAST?
-    'track_name': (PodcastDirectory.TITLE, Ref.EPISODE),
+    'track_name': ('title', Ref.EPISODE),
+    'album': ('title', Ref.PODCAST),
+    'artist': ('author', Ref.EPISODE),
+    'albumartist': ('author', Ref.PODCAST),
+    'genre': ('category', Ref.PODCAST),
+    'date': ('pubdate', None),
+    'comment': ('description', None),
     'any': (None, None)
 }
 
@@ -26,30 +27,19 @@ logger = logging.getLogger(__name__)
 
 
 def _wrap(ref, type=None):
-    # TODO: new uri scheme:
-    # - podcast://dirname/...
-    # - podcast+http://...
-    # - podcast+https://...
-    # blocked by https://github.com/mopidy/mopidy/issues/708
-    defrag = uridefrag(ref.uri)
-    #logger.info('WRAP: %r', defrag)
-    if defrag.fragment:
-        uri = 'podcast:' + uriencode(defrag.base) + '#' + defrag.fragment
-    else:
-        uri = 'podcast:' + uriencode(defrag.base)
-    # FIXME: translating probably no longer necessary with mopidy v0.19
+    # TODO: translating no longer necessary with mopidy v0.19?
     name = unicode(ref.name).translate({ord('"'): "'", ord('/'): '_'})
-    return ref.copy(uri=uri, name=name, type=type or ref.type)
+    return ref.copy(name=name, type=type or ref.type)
 
 
 class PodcastLibraryProvider(backend.LibraryProvider):
 
-    def __init__(self, backend):
+    def __init__(self, config, backend):
         super(PodcastLibraryProvider, self).__init__(backend)
-        self._config = self.backend.config[self.backend.name]
+        self._config = config[Extension.ext_name]
         self._lookup = {}  # cache tracks for lookup
         self.root_directory = Ref.directory(
-            uri='podcast:',
+            uri=self.backend.directory.root_uri,
             name=self._config['browse_label']
         )
 
@@ -59,12 +49,12 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         except KeyError:
             logger.debug('Podcast lookup cache miss: %s', uri)
         try:
-            feedurl, fragment = uridefrag(uri)
+            base, fragment = uridefrag(uri)
             if fragment:
-                self._lookup = {t.uri: t for t in self._tracks(feedurl)}
+                self._lookup = {t.uri: t for t in self._tracks(base)}
                 return [self._lookup[uri]]
             else:
-                tracks = self._tracks(feedurl, self._config['browse_limit'])
+                tracks = self._tracks(base, self._config['browse_limit'])
                 self._lookup = {t.uri: t for t in tracks}
                 return tracks
         except Exception as e:
@@ -76,33 +66,37 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             if not uri:
                 return [self.root_directory]
             elif uri == self.root_directory.uri:
-                return self._browse(None)
+                return self.backend.directory.root_directories
             else:
                 return self._browse(uri, self._config['browse_limit'])
         except Exception as e:
             logger.error('Browsing podcasts failed for %s: %r', uri, e)
-            raise  # FIXME: remove
-            return []
+            return None
 
     def find_exact(self, query=None, uris=None):
+        if not query:
+            return None
         try:
-            q = Query(query, exact=True) if query else None
+            q = Query(query, exact=True)
             return self._search(q, uris, self._config['search_limit'])
         except Exception as e:
             logger.error('Finding podcasts failed: %r', e)
+            return None
 
     def search(self, query=None, uris=None):
+        if not query:
+            return None
         try:
-            q = Query(query, exact=False) if query else None
+            q = Query(query, exact=False)
             return self._search(q, uris, self._config['search_limit'])
         except Exception as e:
             logger.error('Searching podcasts failed: %r', e)
+            return None
 
     @debug_timer(logger, 'Browsing podcasts')
     def _browse(self, uri, limit=None):
-        path = urisplit(uri).getpath() if uri else None
         refs = []
-        for ref in self.backend.directory.browse(path, limit):
+        for ref in self.backend.directory.browse(uri, limit):
             if ref.type == Ref.DIRECTORY or ref.type == Ref.PODCAST:
                 refs.append(_wrap(ref, Ref.DIRECTORY))
             elif ref.type == Ref.EPISODE:
@@ -112,73 +106,79 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         return refs
 
     @debug_timer(logger, 'Searching podcasts')
-    def _search(self, query=None, uris=None, limit=None):
-        if query:
-            if len(query) > 1 or query.keys()[0] not in _QUERY_MAPPING:
-                return None
-            terms = [v for values in query.values() for v in values]
-            attr, type = _QUERY_MAPPING[query.keys()[0]]
-        else:
-            terms = attr = type = None
+    def _search(self, query, uris=None, limit=None):
+        # only single search attribute supported
+        if len(query) != 1 or query.keys()[0] not in _QUERY_MAPPING:
+            return None
+        attr, type = _QUERY_MAPPING[query.keys()[0]]
+        terms = [v for values in query.values() for v in values]
+
+        # merge results for multiple search uris
+        result = []
         directory = self.backend.directory
+        for uri in (uris or [directory.root_uri]):
+            nleft = limit - len(result) if limit else None
+            result.extend(directory.search(uri, terms, attr, type, nleft))
 
         albums = []
         tracks = []
-        for uri in (uris or [None]):
-            path = urisplit(uri).getpath() if uri else None
-            # TODO: adapt limit for multiple uris
-            refs = directory.search(terms, attr, type, path, limit)
-            # sort by uri to improve lookup cache performance
-            for ref in sorted(refs, key=operator.attrgetter('uri')):
-                if ref.type == Ref.PODCAST:
-                    # only minimum album info for performance reasons
-                    albums.append(Album(uri=_wrap(ref).uri, name=ref.name))
-                elif ref.type == Ref.EPISODE:
-                    # lookup also preloads tracks into cache
-                    tracks.extend(self.lookup(_wrap(ref).uri))
-                else:
-                    logger.warn('Unexpected podcast search result: %r', ref)
+        # sort by uri to improve lookup cache performance
+        for ref in sorted(result, key=operator.attrgetter('uri')):
+            if ref.type == Ref.PODCAST:
+                # only minimum album info for performance reasons
+                albums.append(Album(uri=ref.uri, name=ref.name))
+            elif ref.type == Ref.EPISODE:
+                # lookup also preloads tracks into cache
+                tracks.extend(self.lookup(ref.uri))
+            else:
+                logger.warn('Unexpected podcast search result: %r', ref)
+
         # filter results for exact queries only
-        if query and query.exact:
+        if query.exact:
             albums = [album for album in albums if query.match_album(album)]
             tracks = [track for track in tracks if query.match_track(track)]
         return SearchResult(albums=albums, tracks=tracks)
 
     @debug_timer(logger, 'Getting tracks for podcast')
     def _tracks(self, uri, limit=None):
-        podcast = self.backend.directory.get(urisplit(uri).getpath())
+        podcast = self.backend.directory.get(uri)
+        album = self._album(podcast)
+
         if self._config['sort_order'] == 'desc':
             episodes = podcast.episodes[:limit]
             start = 1
         else:
             episodes = reversed(podcast.episodes[:limit])
             start = max(len(podcast.episodes) - limit, 1) if limit else 1
-        album = self._album(podcast, uri)
 
         tracks = []
-        for index, e in enumerate(episodes, start=start):
-            if not e.uri:
+        for index, episode in enumerate(episodes, start=start):
+            if not episode.uri:
                 continue
+            if limit and len(tracks) >= limit:
+                break
             kwargs = {
-                'uri': uri + '#' + e.enclosure.uri,  # TODO
-                'name': e.title,
+                'uri': episode.uri,
+                'name': episode.title,
+                'artists': album.artists,  # default
                 'album': album,
-                'artists': album.artists,
                 'genre': podcast.category,
                 'track_no': index
             }
-            if e.author:
-                kwargs['artists'] = [Artist(name=e.author)]
-            if e.pubdate:
-                kwargs['date'], _, _ = e.pubdate.partition('T')
-            if e.duration:
-                kwargs['length'] = e.duration
+            if episode.author:
+                kwargs['artists'] = [Artist(name=episode.author)]
+            if episode.pubdate:
+                kwargs['date'], _, _ = episode.pubdate.partition('T')
+            if episode.duration:
+                kwargs['length'] = episode.duration
+            if episode.subtitle:
+                kwargs['comment'] = episode.subtitle
             tracks.append(Track(**kwargs))
         return tracks
 
-    def _album(self, podcast, uri):
+    def _album(self, podcast):
         kwargs = {
-            'uri': uri,
+            'uri': podcast.uri,
             'name': podcast.title,
             'num_tracks': len(podcast.episodes)
         }

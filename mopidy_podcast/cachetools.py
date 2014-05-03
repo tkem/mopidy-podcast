@@ -1,6 +1,8 @@
 """Extensible memoizing collections and decorators"""
+
 import collections
 import functools
+import operator
 import random
 
 try:
@@ -8,63 +10,66 @@ try:
 except ImportError:
     from dummy_threading import RLock
 
-__version__ = '0.2.0'
+__version__ = '0.3.1'
 
 
-def cache(cls):
-    """Class decorator that wraps any mutable mapping to work as a
-    cache."""
+class _Cache(collections.MutableMapping):
+    """Class that wraps a mutable mapping to work as a cache."""
 
-    class Cache(collections.MutableMapping):
+    def __init__(self, mapping, maxsize):
+        self.__data = mapping
+        self.__size = sum(map(self.getsizeof, mapping.values()), 0)
+        self.maxsize = maxsize
 
-        __wrapped__ = cls
+    def __getitem__(self, key):
+        return self.__data[key]
 
-        def __init__(self, maxsize, *args, **kwargs):
-            self.__wrapped__ = cls(*args, **kwargs)
-            self.maxsize = maxsize
+    def __setitem__(self, key, value):
+        size = self.getsizeof(value)
+        if size > self.maxsize:
+            raise ValueError
+        while self.size > self.maxsize - size:
+            self.pop(next(iter(self)))
+        self.__data[key] = value
+        self.__size += size
 
-        def __getitem__(self, key):
-            return self.__wrapped__[key]
+    def __delitem__(self, key):
+        self.__size -= self.getsizeof(self.__data.pop(key))
 
-        def __setitem__(self, key, value):
-            while len(self) >= self.maxsize:
-                self.popitem()
-            self.__wrapped__[key] = value
+    def __iter__(self):
+        return iter(self.__data)
 
-        def __delitem__(self, key):
-            del self.__wrapped__[key]
+    def __len__(self):
+        return len(self.__data)
 
-        def __iter__(self):
-            return iter(self.__wrapped__)
+    def __repr__(self):
+        return '%s(%r, size=%d, maxsize=%d)' % (
+            self.__class__.__name__,
+            self.__data,
+            self.__size,
+            self.__maxsize,
+        )
 
-        def __len__(self):
-            return len(self.__wrapped__)
+    @property
+    def size(self):
+        return self.__size
 
-        def __repr__(self):
-            return '%s(%r, maxsize=%d)' % (
-                self.__class__.__name__,
-                self.__wrapped__,
-                self.__maxsize,
-            )
+    @property
+    def maxsize(self):
+        return self.__maxsize
 
-        @property
-        def maxsize(self):
-            return self.__maxsize
+    @maxsize.setter
+    def maxsize(self, value):
+        while self.size > value:
+            self.pop(next(iter(self)))
+        self.__maxsize = value
 
-        @maxsize.setter
-        def maxsize(self, value):
-            if not value > 0:
-                raise ValueError('maxsize must be > 0')
-            while (len(self) > value):
-                self.popitem()
-            self.__maxsize = value
-
-    # TODO: functools.update_wrapper() for class decorators?
-
-    return Cache
+    @staticmethod
+    def getsizeof(_):
+        return 1
 
 
-class LRUCache(cache(collections.OrderedDict)):
+class LRUCache(_Cache):
     """Least Recently Used (LRU) cache implementation.
 
     Discards the least recently used items first to make space when
@@ -74,23 +79,30 @@ class LRUCache(cache(collections.OrderedDict)):
     track of item usage.
     """
 
-    # OrderedDict.move_to_end is only available in Python 3
-    if hasattr(collections.OrderedDict, 'move_to_end'):
-        def __getitem__(self, key):
-            value = self.__wrapped__[key]
-            self.__wrapped__.move_to_end(key)
-            return value
-    else:
-        def __getitem__(self, key):
-            value = self.__wrapped__.pop(key)
-            self.__wrapped__[key] = value
-            return value
+    class OrderedDict(collections.OrderedDict):
+        # OrderedDict.move_to_end is only available in Python 3
+        if hasattr(collections.OrderedDict, 'move_to_end'):
+            def __getitem__(self, key,
+                            getitem=collections.OrderedDict.__getitem__):
+                self.move_to_end(key)
+                return getitem(self, key)
+        else:
+            def __getitem__(self, key,
+                            getitem=collections.OrderedDict.__getitem__,
+                            delitem=collections.OrderedDict.__delitem__,
+                            setitem=collections.OrderedDict.__setitem__):
+                value = getitem(self, key)
+                delitem(self, key)
+                setitem(self, key, value)
+                return value
 
-    def popitem(self):
-        return self.__wrapped__.popitem(False)
+    def __init__(self, maxsize, getsizeof=None):
+        if getsizeof is not None:
+            self.getsizeof = getsizeof
+        _Cache.__init__(self, self.OrderedDict(), maxsize)
 
 
-class LFUCache(cache(dict)):
+class LFUCache(_Cache):
     """Least Frequently Used (LFU) cache implementation.
 
     Counts how often an item is needed, and discards the items used
@@ -100,49 +112,49 @@ class LFUCache(cache(dict)):
     track of usage counts.
     """
 
-    def __init__(self, maxsize, *args, **kwargs):
-        super(LFUCache, self).__init__(maxsize, *args, **kwargs)
+    def __init__(self, maxsize, getsizeof=None):
+        if getsizeof is not None:
+            self.getsizeof = getsizeof
+        _Cache.__init__(self, {}, maxsize)
         self.__counter = collections.Counter()
 
     def __getitem__(self, key):
-        value = super(LFUCache, self).__getitem__(key)
+        value = _Cache.__getitem__(self, key)
         self.__counter[key] += 1
         return value
 
     def __setitem__(self, key, value):
-        super(LFUCache, self).__setitem__(key, value)
+        _Cache.__setitem__(self, key, value)
         self.__counter[key] += 0
 
     def __delitem__(self, key):
-        super(LFUCache, self).__delitem__(key)
+        _Cache.__delitem__(self, key)
         del self.__counter[key]
 
-    def popitem(self):
-        try:
-            item = self.__counter.most_common()[-1]
-        except IndexError:
-            raise KeyError
-        super(LFUCache, self).pop(item[0])
-        return item
+    def __iter__(self):
+        items = reversed(self.__counter.most_common())
+        return iter(map(operator.itemgetter(0), items))
 
 
-class RRCache(cache(dict)):
+class RRCache(_Cache):
     """Random Replacement (RR) cache implementation.
 
-    Randomly selects a candidate item and discards it to make space
+    Randomly selects candidate items and discards then to make space
     when necessary.
 
-    This implementations uses :func:`random.choice` to select the item
-    to be discarded.
+    This implementations uses :func:`random.shuffle` to select the
+    items to be discarded.
     """
 
-    def popitem(self):
-        try:
-            item = random.choice(list(self.items()))
-        except IndexError:
-            raise KeyError
-        self.pop(item[0])
-        return item
+    def __init__(self, maxsize, getsizeof=None):
+        if getsizeof is not None:
+            self.getsizeof = getsizeof
+        _Cache.__init__(self, {}, maxsize)
+
+    def __iter__(self):
+        keys = list(_Cache.__iter__(self))
+        random.shuffle(keys)
+        return iter(keys)
 
 
 CacheInfo = collections.namedtuple('CacheInfo', 'hits misses maxsize currsize')
@@ -161,27 +173,29 @@ def _makekey_typed(args, kwargs):
 
 def _cachedfunc(cache, makekey, lock):
     def decorator(func):
-        count = [0, 0]
+        stats = [0, 0]
 
         def wrapper(*args, **kwargs):
             key = makekey(args, kwargs)
             with lock:
                 try:
                     result = cache[key]
-                    count[0] += 1
+                    stats[0] += 1
                     return result
                 except KeyError:
-                    count[1] += 1
+                    stats[1] += 1
             result = func(*args, **kwargs)
             with lock:
                 cache[key] = result
             return result
 
         def cache_info():
-            return CacheInfo(count[0], count[1], cache.maxsize, len(cache))
+            with lock:
+                return CacheInfo(stats[0], stats[1], cache.maxsize, cache.size)
 
         def cache_clear():
-            cache.clear()
+            with lock:
+                cache.clear()
 
         wrapper.cache_info = cache_info
         wrapper.cache_clear = cache_clear
@@ -190,34 +204,60 @@ def _cachedfunc(cache, makekey, lock):
     return decorator
 
 
-def lru_cache(maxsize=128, typed=False, lock=RLock):
-    """Decorator to wrap a function with a memoizing callable that
-    saves up to the `maxsize` most recent calls based on a Least
-    Recently Used (LRU) algorithm.
+def _cachedmeth(getcache, makekey, lock):
+    def decorator(func):
+        def wrapper(self, *args, **kwargs):
+            key = makekey((func,) + args, kwargs)
+            cache = getcache(self)
+            with lock:
+                try:
+                    return cache[key]
+                except KeyError:
+                    pass
+            result = func(self, *args, **kwargs)
+            with lock:
+                cache[key] = result
+            return result
+
+        return functools.update_wrapper(wrapper, func)
+
+    return decorator
+
+
+def lru_cache(maxsize=128, typed=False, getsizeof=None, lock=RLock):
+    """Decorator to wrap a function with a memoizing callable that saves
+    up to `maxsize` results based on a Least Recently Used (LRU)
+    algorithm.
+
     """
-    if typed:
-        return _cachedfunc(LRUCache(maxsize), _makekey_typed, lock())
-    else:
-        return _cachedfunc(LRUCache(maxsize), _makekey, lock())
+    makekey = _makekey_typed if typed else _makekey
+    return _cachedfunc(LRUCache(maxsize, getsizeof), makekey, lock())
 
 
-def lfu_cache(maxsize=128, typed=False, lock=RLock):
-    """Decorator to wrap a function with a memoizing callable that
-    saves up to the `maxsize` most recent calls based on a Least
-    Frequently Used (LFU) algorithm.
+def lfu_cache(maxsize=128, typed=False, getsizeof=None, lock=RLock):
+    """Decorator to wrap a function with a memoizing callable that saves
+    up to `maxsize` results based on a Least Frequently Used (LFU)
+    algorithm.
+
     """
-    if typed:
-        return _cachedfunc(LFUCache(maxsize), _makekey_typed, lock())
-    else:
-        return _cachedfunc(LFUCache(maxsize), _makekey, lock())
+    makekey = _makekey_typed if typed else _makekey
+    return _cachedfunc(LFUCache(maxsize, getsizeof), makekey, lock())
 
 
-def rr_cache(maxsize=128, typed=False, lock=RLock):
-    """Decorator to wrap a function with a memoizing callable that
-    saves up to the `maxsize` most recent calls based on a Random
-    Replacement (RR) algorithm.
+def rr_cache(maxsize=128, typed=False, getsizeof=None, lock=RLock):
+    """Decorator to wrap a function with a memoizing callable that saves
+    up to `maxsize` results based on a Random Replacement (RR)
+    algorithm.
+
     """
-    if typed:
-        return _cachedfunc(RRCache(maxsize), _makekey_typed, lock())
-    else:
-        return _cachedfunc(RRCache(maxsize), _makekey, lock())
+    makekey = _makekey_typed if typed else _makekey
+    return _cachedfunc(RRCache(maxsize, getsizeof), makekey, lock())
+
+
+def cachedmethod(getcache, typed=False, lock=RLock):
+    """Decorator to wrap a class or instance method with a memoizing
+    callable that saves results in a (possibly shared) cache.
+
+    """
+    makekey = _makekey_typed if typed else _makekey
+    return _cachedmeth(getcache, makekey, lock())
