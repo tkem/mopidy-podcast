@@ -21,20 +21,16 @@ class Extension(ext.Extension):
         schema['browse_label'] = config.String()
         schema['browse_limit'] = config.Integer(optional=True, minimum=1)
         schema['search_limit'] = config.Integer(optional=True, minimum=1)
+        schema['search_results'] = config.String(choices=['title', 'full'])
         schema['sort_order'] = config.String(choices=['asc', 'desc'])
         schema['update_interval'] = config.Integer(minimum=1)
         schema['cache_size'] = config.Integer(minimum=1)
         schema['cache_ttl'] = config.Integer(minimum=1)
         schema['timeout'] = config.Integer(optional=True, minimum=1)
 
-        # feeds directory provider config (optional)
+        # feeds directory provider config
         schema['feeds'] = config.List(optional=True)
         schema['feeds_label'] = config.String(optional=True)
-
-        # deprecated config values
-        schema['directories'] = config.Deprecated()
-        schema['max_episodes'] = config.Deprecated()
-        schema['feed_urls'] = config.Deprecated()
 
         return schema
 

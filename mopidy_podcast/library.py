@@ -19,7 +19,7 @@ _QUERY_MAPPING = {
     'albumartist': ('author', Ref.PODCAST),
     'genre': ('category', Ref.PODCAST),
     'date': ('pubdate', None),
-    'comment': ('description', None),
+    'comment': ('description', Ref.EPISODE),
     'any': (None, None)
 }
 
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 def _wrap(ref, type=None):
     # TODO: translating no longer necessary with mopidy v0.19?
-    name = unicode(ref.name).translate({ord('"'): "'", ord('/'): '_'})
+    name = ref.name.replace('"', "'").replace('/', '_')
     return ref.copy(name=name, type=type or ref.type)
 
 
@@ -112,32 +112,57 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             return None
         attr, type = _QUERY_MAPPING[query.keys()[0]]
         terms = [v for values in query.values() for v in values]
+        logger.debug('Searching "%s.%s" for %r', type, attr, terms)
 
         # merge results for multiple search uris
-        result = []
+        results = []
         directory = self.backend.directory
         for uri in (uris or [directory.root_uri]):
-            nleft = limit - len(result) if limit else None
-            result.extend(directory.search(uri, terms, attr, type, nleft))
+            nleft = limit - len(results) if limit else None
+            results.extend(directory.search(uri, terms, attr, type, nleft))
 
-        albums = []
-        tracks = []
-        # sort by uri to improve lookup cache performance
-        for ref in sorted(result, key=operator.attrgetter('uri')):
-            if ref.type == Ref.PODCAST:
-                # only minimum album info for performance reasons
-                albums.append(Album(uri=ref.uri, name=ref.name))
-            elif ref.type == Ref.EPISODE:
-                # lookup also preloads tracks into cache
-                tracks.extend(self.lookup(ref.uri))
-            else:
-                logger.warn('Unexpected podcast search result: %r', ref)
+        # convert refs to albums and tracks
+        if self._config['search_results'] == 'full':
+            albums, tracks = self._wrap_search_results_full(results)
+        else:
+            albums, tracks = self._wrap_search_results(results)
 
-        # filter results for exact queries only
+        # filter results for exact queries
         if query.exact:
             albums = [album for album in albums if query.match_album(album)]
             tracks = [track for track in tracks if query.match_track(track)]
         return SearchResult(albums=albums, tracks=tracks)
+
+    @debug_timer(logger, 'Wrapping search results')
+    def _wrap_search_results(self, refs):
+        albums = []
+        tracks = []
+        for ref in refs:
+            if ref.type == Ref.PODCAST:
+                albums.append(Album(uri=ref.uri, name=ref.name))
+            elif ref.type == Ref.EPISODE:
+                tracks.append(Track(uri=ref.uri, name=ref.name))
+            else:
+                logger.warn('Unexpected podcast search result: %r', ref)
+        return (albums, tracks)
+
+    @debug_timer(logger, 'Wrapping search results')
+    def _wrap_search_results_full(self, refs):
+        directory = self.backend.directory
+        albums = []
+        tracks = []
+        # sort by uri to improve lookup cache performance
+        for ref in sorted(refs, key=operator.attrgetter('uri')):
+            try:
+                if ref.type == Ref.PODCAST:
+                    albums.append(self._album(directory.get(ref.uri)))
+                elif ref.type == Ref.EPISODE:
+                    tracks.extend(self.lookup(ref.uri))
+                else:
+                    logger.warn('Unexpected podcast search result: %r', ref)
+            except Exception as e:
+                logger.warn('Error loading %s: %r ', ref.uri, e)
+        return (albums, tracks)
 
     @debug_timer(logger, 'Getting tracks for podcast')
     def _tracks(self, uri, limit=None):
