@@ -86,7 +86,7 @@ def _to_episode(e, feedurl):
     kwargs['pubdate'] = _gettag(e, 'pubDate', _to_isoformat)
     kwargs['enclosure'] = _gettag(e, 'enclosure', _to_enclosure)
     # itunes tags
-    for name in ('author', 'explicit', 'subtitle'):
+    for name in ('author', 'block', 'explicit', 'subtitle'):
         kwargs[name] = _gettag(e, 'itunes:' + name)
     kwargs['image'] = _gettag(e, 'itunes:image', _to_image)
     kwargs['duration'] = _gettag(e, 'itunes:duration', _to_milliseconds)
@@ -143,7 +143,8 @@ class Podcast(mopidy.models.ImmutableObject):
     uri = None
     """The podcast URI.
 
-    The URI *MUST NOT* contain a fragment identifier.  For podcasts
+    To distinguish between podcast and episode URIs, the podcast URI
+    *MUST NOT* contain a fragment identifier.  For podcasts
     distributed as RSS feeds, this is the URL from which the RSS feed
     can be retrieved.
 
@@ -180,9 +181,8 @@ class Podcast(mopidy.models.ImmutableObject):
     author = None
     """The podcast author's name."""
 
-    # TODO
-    # block = None
-    # """Prevent an episode or podcast from appearing."""
+    block = None
+    """Prevent a podcast from appearing."""
 
     # TODO: sub-categories
     category = None
@@ -194,20 +194,11 @@ class Podcast(mopidy.models.ImmutableObject):
     complete = None
     """Indicates completion of the podcast."""
 
-    # TODO
-    # newfeedurl = None
-    # """Used to inform of new feed URL location."""
-
-    # TODO
-    # owner = None
-    # """Used for contact only."""
+    newfeedurl = None
+    """Used to inform of new feed URL location."""
 
     subtitle = None
     """A short description of the podcast."""
-
-    # TODO
-    # summary = None
-    # """Description column."""
 
     keywords = frozenset()
     """A set of keywords to associate with the podcast."""
@@ -218,9 +209,8 @@ class Podcast(mopidy.models.ImmutableObject):
     """The podcast's episodes as a read-only :class:`tuple` of
     :class:`Episode` instances.
 
-    By default, i.e. when using :meth:`Podcast.parse` to create a
-    :class:`Podcast`, a podcast's episodes are sorted by descending
-    :attr:`pubdate`.
+    When using :meth:`Podcast.parse` to create a :class:`Podcast`, a
+    podcast's episodes are sorted by descending :attr:`pubdate`.
 
     """
 
@@ -251,13 +241,15 @@ class Podcast(mopidy.models.ImmutableObject):
         kwargs['pubdate'] = _gettag(channel, 'pubDate', _to_isoformat)
         kwargs['image'] = _gettag(channel, 'image', _to_image)
         # itunes tags
-        for name in ('author', 'complete', 'explicit', 'subtitle'):
+        for name in ('author', 'block', 'complete', 'explicit', 'subtitle'):
             kwargs[name] = _gettag(channel, 'itunes:' + name)
         # TBD: prefer itunes image over RSS image?
         if not kwargs['image']:
             kwargs['image'] = _gettag(channel, 'itunes:image', _to_image)
         kwargs['category'] = _gettag(channel, 'itunes:category', _to_category)
         kwargs['keywords'] = _gettag(channel, 'itunes:keywords', _to_wordlist)
+        kwargs['newfeedurl'] = _gettag(channel, 'itunes:new-feed-url')
+
         # episodes sorted by pubdate
         episodes = []
         for item in channel.iter(tag='item'):
@@ -307,9 +299,8 @@ class Episode(mopidy.models.ImmutableObject):
     author = None
     """The episode author's name."""
 
-    # TODO
-    # block = None
-    # """Prevent an episode or podcast from appearing."""
+    block = None
+    """Prevent an episode from appearing."""
 
     image = None
     """An image to be displayed with the episode as an instance of
@@ -328,10 +319,6 @@ class Episode(mopidy.models.ImmutableObject):
 
     subtitle = None
     """A short description of the episode."""
-
-    # TODO
-    # summary = None
-    # """Description column."""
 
     keywords = frozenset()
     """A list of keywords associated with the episode."""
