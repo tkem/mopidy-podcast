@@ -1,5 +1,24 @@
 Revision history for Mopidy-Podcast
 
+0.5.0   2014-05-10
+
+        - Move RSS parsing to FeedsDirectory.
+
+        - Support for additional podcast/episode properties.
+
+        - Add search_results config value.
+
+        - Add uri_schemes property to PodcastDirectory.
+
+        - Change data types for pubdate, duration.
+
+        - Add uri property to Podcast and Episode.
+
+        - Support for <itunes:image>.
+
+        - Convert Podcast.Image and Episode.Enclosure to Mopidy model
+          types.
+
 0.4.0   2014-04-11
 
         - PodcastDirectory/Models API changes.

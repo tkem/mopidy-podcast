@@ -15,8 +15,8 @@ class PodcastDirectory(object):
     name = None
     """Name of the podcast directory implementation."""
 
-    display_name = None
-    """User-friendly name for browsing the directory."""
+    root_name = None
+    """Name of the root directory for browsing."""
 
     uri_schemes = []
     """List of URI schemes the directory can handle."""

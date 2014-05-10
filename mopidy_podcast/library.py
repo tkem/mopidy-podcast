@@ -19,7 +19,7 @@ _QUERY_MAPPING = {
     'albumartist': ('author', Ref.PODCAST),
     'genre': ('category', Ref.PODCAST),
     'date': ('pubdate', None),
-    'comment': ('description', Ref.EPISODE),
+    'comment': ('subtitle', Ref.EPISODE),
     'any': (None, None)
 }
 
@@ -58,7 +58,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 self._lookup = {t.uri: t for t in tracks}
                 return tracks
         except Exception as e:
-            logger.error('Podcast lookup failed for %s: %r', uri, e)
+            logger.error('Podcast lookup failed for %s: %s', uri, e)
             return []
 
     def browse(self, uri):
@@ -70,7 +70,8 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             else:
                 return self._browse(uri, self._config['browse_limit'])
         except Exception as e:
-            logger.error('Browsing podcasts failed for %s: %r', uri, e)
+            logger.error('Browsing podcasts failed for %s: %s', uri, e)
+            raise
             return None
 
     def find_exact(self, query=None, uris=None):
@@ -80,7 +81,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             q = Query(query, exact=True)
             return self._search(q, uris, self._config['search_limit'])
         except Exception as e:
-            logger.error('Finding podcasts failed: %r', e)
+            logger.error('Finding podcasts failed: %s', e)
             return None
 
     def search(self, query=None, uris=None):
@@ -90,7 +91,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             q = Query(query, exact=False)
             return self._search(q, uris, self._config['search_limit'])
         except Exception as e:
-            logger.error('Searching podcasts failed: %r', e)
+            logger.error('Searching podcasts failed: %s', e)
             return None
 
     @debug_timer(logger, 'Browsing podcasts')
@@ -112,7 +113,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             return None
         attr, type = _QUERY_MAPPING[query.keys()[0]]
         terms = [v for values in query.values() for v in values]
-        logger.debug('Searching "%s.%s" for %r', type, attr, terms)
+        logger.info('Searching "%s.%s" for %r in %r', type, attr, terms, uris)
 
         # merge results for multiple search uris
         results = []
@@ -161,7 +162,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 else:
                     logger.warn('Unexpected podcast search result: %r', ref)
             except Exception as e:
-                logger.warn('Error loading %s: %r ', ref.uri, e)
+                logger.warn('Skipping search result %s: %s', ref.uri, e)
         return (albums, tracks)
 
     @debug_timer(logger, 'Getting tracks for podcast')
@@ -188,14 +189,15 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 'artists': album.artists,  # default
                 'album': album,
                 'genre': podcast.category,
+                'comment': episode.subtitle,  # TODO: summary?
                 'track_no': index
             }
             if episode.author:
                 kwargs['artists'] = [Artist(name=episode.author)]
             if episode.pubdate:
-                kwargs['date'], _, _ = episode.pubdate.partition('T')
+                kwargs['date'] = episode.pubdate.date().isoformat()
             if episode.duration:
-                kwargs['length'] = episode.duration
+                kwargs['length'] = int(episode.duration.total_seconds() * 1000)
             if episode.subtitle:
                 kwargs['comment'] = episode.subtitle
             tracks.append(Track(**kwargs))
@@ -210,7 +212,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         if podcast.author:
             kwargs['artists'] = [Artist(name=podcast.author)]
         if podcast.pubdate:
-            kwargs['date'], _, _ = podcast.pubdate.partition('T')
+            kwargs['date'] = podcast.pubdate.date().isoformat()
         if podcast.image and podcast.image.uri:
             kwargs['images'] = [podcast.image.uri]
         return Album(**kwargs)

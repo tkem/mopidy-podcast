@@ -62,10 +62,10 @@ class PodcastDirectoryDispatcher(PodcastDirectory):
         self._schemes = {}
 
         for d in directories:
-            if d.display_name:
+            if d.root_name:
                 self.root_directories.append(Ref.directory(
                     uri=urijoin(self.root_uri, '//' + d.name + '/'),
-                    name=d.display_name
+                    name=d.root_name
                 ))
             proxy = PodcastDirectoryActor.start(d).proxy()
             self._proxies[d.name] = proxy
@@ -74,7 +74,7 @@ class PodcastDirectoryDispatcher(PodcastDirectory):
     def get(self, uri):
         proxy, uribase, uriref = self._lookup(uri)
         podcast = proxy.get(uriref).get()
-        episodes = tuple(_transform(uribase, e) for e in podcast.episodes)
+        episodes = (_transform(uribase, e) for e in podcast.episodes if e.uri)
         return podcast.copy(uri=uri, episodes=episodes)
 
     def browse(self, uri, limit=None):
@@ -131,5 +131,5 @@ class PodcastDirectoryDispatcher(PodcastDirectory):
                 merged.update((ref.uri, ref) for ref in result)
             except Exception as e:
                 logger.error('Searching podcast directory "%s" failed: %r',
-                             base.authority, e)
+                             name, e)
         return merged.values()[:limit]

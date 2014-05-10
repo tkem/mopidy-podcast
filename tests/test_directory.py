@@ -13,7 +13,7 @@ class TestDirectory(PodcastDirectory):
 
     name = 'test'
 
-    display_name = 'Test Directory'
+    root_name = 'Test Directory'
 
     refs = [Ref.podcast(uri='/foo', name='bar')]
 

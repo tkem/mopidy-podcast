@@ -2,12 +2,13 @@ from __future__ import unicode_literals
 
 import unittest
 
-from mopidy_podcast.models import Podcast
+from mopidy_podcast.feeds import FeedsDirectory
 from . import datapath
 
 BASE_URL = 'http://example.com/podcasts/everything/'
-FEED_URL = BASE_URL + 'example.xml'
+LINK_URL = 'http://www.example.com/podcasts/everything/index.html'
 IMAGE_URL = BASE_URL + 'AllAboutEverything.jpg'
+
 EPISODE1_MEDIA_URL = BASE_URL + 'AllAboutEverythingEpisode1.mp3'
 EPISODE1_IMAGE_URL = BASE_URL + 'AllAboutEverything/Episode3.jpg'  # sic!
 EPISODE2_MEDIA_URL = BASE_URL + 'AllAboutEverythingEpisode2.mp3'
@@ -15,21 +16,30 @@ EPISODE2_IMAGE_URL = BASE_URL + 'AllAboutEverything/Episode2.jpg'
 EPISODE3_MEDIA_URL = BASE_URL + 'AllAboutEverythingEpisode3.m4a'
 EPISODE3_IMAGE_URL = BASE_URL + 'AllAboutEverything/Episode1.jpg'  # sic!
 
-
-LINK_URL = 'http://www.example.com/podcasts/everything/index.html'
-
 URI_PREFIX = BASE_URL + 'AllAboutEverything'
 
 
-class ModelsTest(unittest.TestCase):
+class FeedsTest(unittest.TestCase):
+
+    def setUp(self):
+        self.feeds = FeedsDirectory({
+            'podcast': {
+                'feeds': [],
+                'feeds_label': 'Feeds',
+                'cache_size': 1,
+                'cache_ttl': 0,
+                'timeout': None
+            }
+        })
 
     def test_parse(self):
-        with open(datapath('example.xml')) as f:
-            podcast = Podcast.parse(f, FEED_URL)
-        self.assertEqual(podcast.uri, FEED_URL)
+        feedurl = 'file://' + datapath('example.xml')
+        podcast = self.feeds.get(feedurl)
+        self.assertEqual(podcast.uri, feedurl)
+
         self.assertEqual(podcast.title, 'All About Everything')
         self.assertEqual(podcast.link, LINK_URL)
-        self.assertRegexpMatches(podcast.description, '^All About Everything')
+        self.assertRegexpMatches(podcast.summary, '^All About Everything')
         self.assertEqual(podcast.language, 'en-us')
         self.assertRegexpMatches(podcast.copyright, 'John Doe & Family')
         self.assertEqual(podcast.pubdate, None)
@@ -39,7 +49,6 @@ class ModelsTest(unittest.TestCase):
         self.assertEqual(podcast.complete, None)
         self.assertEqual(podcast.explicit, None)
         self.assertEqual(podcast.subtitle, 'A show about everything')
-        self.assertItemsEqual(podcast.keywords, [])
         self.assertEqual(podcast.category, 'Technology')
 
         self.assertEqual(len(podcast.episodes), 3)
@@ -47,51 +56,36 @@ class ModelsTest(unittest.TestCase):
 
         # episode 1
 
-        self.assertEqual(episode1.uri, FEED_URL + '#' + EPISODE1_MEDIA_URL)
+        self.assertEqual(episode1.uri, podcast.uri + '#' + EPISODE1_MEDIA_URL)
         self.assertEqual(episode1.title, 'Red, Whine, & Blue')
-        self.assertEqual(episode1.link, None)
-        self.assertEqual(episode1.description, None)
-        self.assertEqual(episode1.pubdate, '2005-06-01T19:00:00Z')
-        self.assertEqual(episode1.enclosure.uri, EPISODE1_MEDIA_URL)
-
         self.assertEqual(episode1.author, 'Various')
+        self.assertEqual(str(episode1.pubdate), '2005-06-01 19:00:00')
+        self.assertEqual(str(episode1.duration), '0:03:59')
+        self.assertEqual(episode1.enclosure.uri, EPISODE1_MEDIA_URL)
         self.assertEqual(episode1.image.uri, EPISODE1_IMAGE_URL)
-        self.assertEqual(episode1.explicit, None)
-        self.assertEqual(episode1.subtitle, 'Red + Blue != Purple')
-        self.assertEqual(episode1.duration, (3 * 60 + 59) * 1000)
-        self.assertItemsEqual(episode1.keywords, [])
-        self.assertEqual(episode1.order, None)
+        self.assertRegexpMatches(episode1.subtitle, '^Red \+ Blue')
+        self.assertRegexpMatches(episode1.summary, '^This week')
 
         # episode 2
 
-        self.assertEqual(episode2.uri, FEED_URL + '#' + EPISODE2_MEDIA_URL)
+        self.assertEqual(episode2.uri, podcast.uri + '#' + EPISODE2_MEDIA_URL)
         self.assertEqual(episode2.title, 'Socket Wrench Shootout')
-        self.assertEqual(episode2.link, None)
-        self.assertEqual(episode2.description, None)
-        self.assertEqual(episode2.pubdate, '2005-06-08T19:00:00Z')
-        self.assertEqual(episode2.enclosure.uri, EPISODE2_MEDIA_URL)
-
         self.assertEqual(episode2.author, 'Jane Doe')
+        self.assertEqual(str(episode2.pubdate), '2005-06-08 19:00:00')
+        self.assertEqual(str(episode2.duration), '0:04:34')
+        self.assertEqual(episode2.enclosure.uri, EPISODE2_MEDIA_URL)
         self.assertEqual(episode2.image.uri, EPISODE2_IMAGE_URL)
-        self.assertEqual(episode2.explicit, None)
         self.assertRegexpMatches(episode2.subtitle, '^Comparing socket')
-        self.assertEqual(episode2.duration, (4 * 60 + 34) * 1000)
-        self.assertItemsEqual(episode2.keywords, [])
-        self.assertEqual(episode2.order, None)
+        self.assertRegexpMatches(episode2.summary, '^This week')
 
         # episode 3
 
-        self.assertEqual(episode3.uri, FEED_URL + '#' + EPISODE3_MEDIA_URL)
+        self.assertEqual(episode3.uri, podcast.uri + '#' + EPISODE3_MEDIA_URL)
         self.assertEqual(episode3.title, 'Shake Shake Shake Your Spices')
-        self.assertEqual(episode3.link, None)
-        self.assertEqual(episode3.description, None)
-        self.assertEqual(episode3.pubdate, '2005-06-15T19:00:00Z')
-        self.assertEqual(episode3.enclosure.uri, EPISODE3_MEDIA_URL)
-
         self.assertEqual(episode3.author, 'John Doe')
+        self.assertEqual(str(episode3.pubdate), '2005-06-15 19:00:00')
+        self.assertEqual(str(episode3.duration), '0:07:04')
+        self.assertEqual(episode3.enclosure.uri, EPISODE3_MEDIA_URL)
         self.assertEqual(episode3.image.uri, EPISODE3_IMAGE_URL)
-        self.assertEqual(episode3.explicit, None)
+        self.assertRegexpMatches(episode3.summary, '^This week')
         self.assertRegexpMatches(episode3.subtitle, '^A short primer')
-        self.assertEqual(episode3.duration, (7 * 60 + 4) * 1000)
-        self.assertItemsEqual(episode3.keywords, [])
-        self.assertEqual(episode3.order, None)
