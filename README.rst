@@ -8,8 +8,7 @@ podcasts.
 Installation
 ------------------------------------------------------------------------
 
-Like other Mopidy extensions, Mopidy-Podcast can be installed using
-pip by running::
+The latest PyPi version can be installed by running::
 
     pip install Mopidy-Podcast
 

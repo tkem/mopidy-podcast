@@ -38,10 +38,11 @@ class Podcast(mopidy.models.ImmutableObject):
     uri = None
     """The podcast URI.
 
+    For podcasts distributed as RSS feeds, the podcast URI is the URL
+    from which the RSS feed can be retrieved.
+
     To distinguish between podcast and episode URIs, the podcast URI
-    *MUST NOT* contain a fragment identifier.  For podcasts
-    distributed as RSS feeds, the podcast URI is the URL from which
-    the RSS feed can be retrieved.
+    *MUST NOT* contain a fragment identifier.
 
     """
 
@@ -58,13 +59,16 @@ class Podcast(mopidy.models.ImmutableObject):
     """The podcast's ISO two-letter language code."""
 
     pubdate = None
-    """The podcast's publication date and time in ISO 8601 format."""
+    """The podcast's publication date and time as an instance of
+    :class:`datetime.datetime`.
+
+    """
 
     author = None
-    """The podcast author's name."""
+    """The podcast's author's name."""
 
     block = None
-    """Prevent a podcast from appearing."""
+    """Prevent a podcast from appearing in the directory."""
 
     category = None
     """The main category of the podcast."""
@@ -109,9 +113,9 @@ class Episode(mopidy.models.ImmutableObject):
     uri = None
     """The episode URI.
 
-    If the episode contains an enclosure, the episode URI *MUST* be
-    the associated podcast URI with the enclosure URL appended as a
-    fragment identifier.
+    If the episode contains an enclosure, the episode URI *MUST*
+    consist of the associated podcast URI with the enclosure URL
+    appended as a fragment identifier.
 
     """
 
@@ -122,13 +126,16 @@ class Episode(mopidy.models.ImmutableObject):
     """A string that uniquely identifies the episode."""
 
     pubdate = None
-    """The episode's publication date and time in ISO 8601 format."""
+    """The episode's publication date and time as an instance of
+    :class:`datetime.datetime`.
+
+    """
 
     author = None
-    """The episode author's name."""
+    """The episode's author's name."""
 
     block = None
-    """Prevent an episode from appearing."""
+    """Prevent an episode from appearing in the directory."""
 
     image = None
     """An image to be displayed with the episode as an instance of
@@ -137,7 +144,10 @@ class Episode(mopidy.models.ImmutableObject):
     """
 
     duration = None
-    """The episode's duration in milliseconds."""
+    """The episode's duration as an instance of
+    :class:`datetime.timedelta`.
+
+    """
 
     explicit = None
     """Indicates whether the episode contains explicit material."""

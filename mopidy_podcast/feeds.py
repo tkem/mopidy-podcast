@@ -1,15 +1,19 @@
 from __future__ import unicode_literals
 
 import collections
-import email.utils
+import contextlib
 import datetime
+import email.utils
 import itertools
 import logging
 import operator
 import re
+import time
+import urllib2
+import xml.etree.ElementTree
 
 from . import Extension
-from .cachetools import cachedmethod
+from .cachetools import LRUCache, cachedmethod
 from .directory import PodcastDirectory
 from .models import Podcast, Episode, Image, Enclosure, Ref
 from .uritools import uridefrag
@@ -27,9 +31,18 @@ _NAMESPACES = {
 }
 
 _PODCAST_SEARCH_ATTRS = ('title', 'author', 'category', 'subtitle', 'summary')
+
 _EPISODE_SEARCH_ATTRS = ('title', 'author', 'subtitle', 'summary')
 
 logger = logging.getLogger(__name__)
+
+
+def _getchannel(uri, timeout=None):
+    with contextlib.closing(urllib2.urlopen(uri, timeout=timeout)) as source:
+        channel = xml.etree.ElementTree.parse(source).find('channel')
+    if channel is None:
+        raise TypeError('Error parsing %s' % uri)
+    return channel
 
 
 def _gettag(etree, tag, convert=None, namespaces=_NAMESPACES):
@@ -88,7 +101,6 @@ def _to_image(e):
 
 def _to_enclosure(e):
     uri = e.get('url')
-    logger.debug("Enclosure url: %s", uri)
     type = e.get('type')
     length = int(e.get('length')) if e.get('length', '').isdigit() else None
     return Enclosure(uri=uri, type=type, length=length)
@@ -119,8 +131,36 @@ def _to_episode(e, feedurl):
     return Episode(**kwargs)
 
 
-def _by_pubdate(model):
+def _pubdate(model):
     return model.pubdate or datetime.datetime.min
+
+
+class FeedsCache(LRUCache):
+
+    def __init__(self, maxsize, ttl, timer=time.time):
+        super(FeedsCache, self).__init__(maxsize)
+        self.__expires = {}
+        self.__timer = timer
+        self.__ttl = ttl
+
+    def __getitem__(self, key):
+        if self.__expires[key] < self.__timer():
+            logger.debug('Cached feed expired: %s', key)
+            del self[key]
+        return super(FeedsCache, self).__getitem__(key)
+
+    def __setitem__(self, key, value):
+        t = self.__timer()
+        for k in self.keys():
+            if self.__expires[k] < t:
+                logger.debug('Cached feed expired: %s', k)
+                del self[k]
+        super(FeedsCache, self).__setitem__(key, value)
+        self.__expires[key] = self.__timer() + self.__ttl
+
+    def __delitem__(self, key):
+        super(FeedsCache, self).__delitem__(key)
+        del self.__expires[key]
 
 
 class FeedsDirectory(PodcastDirectory):
@@ -133,25 +173,19 @@ class FeedsDirectory(PodcastDirectory):
 
     def __init__(self, config):
         super(FeedsDirectory, self).__init__(config)
-        self._cache = self._cache(**config[Extension.ext_name])
-        self._feeds = config[Extension.ext_name]['feeds']
-        self._timeout = config[Extension.ext_name]['timeout']
+        self._config = config[Extension.ext_name]
+        self._cache = FeedsCache(
+            self._config['feeds_cache_size'],
+            self._config['feeds_cache_ttl']
+        )
         self._podcasts = []
         self._episodes = []
-        # only display in browsing if any feeds are configured
-        if self._feeds:
-            self.root_name = config[Extension.ext_name]['feeds_label']
+
+        self.root_name = self._config['feeds_root_name']  # for browsing
 
     @cachedmethod(getcache=operator.attrgetter('_cache'))
     def get(self, uri):
-        import xml.etree.ElementTree as ET
-        from contextlib import closing
-        from urllib2 import urlopen
-
-        with closing(urlopen(uri, timeout=self._timeout)) as source:
-            channel = ET.parse(source).find('channel')
-        if channel is None:
-            raise TypeError('Not a valid RSS feed')
+        channel = _getchannel(uri, self._config['feeds_timeout'])
 
         kwargs = {}
         kwargs['uri'], _ = uridefrag(uri)  # strip fragment if present
@@ -168,9 +202,8 @@ class FeedsDirectory(PodcastDirectory):
 
         if not kwargs['summary']:
             kwargs['summary'] = _gettag(channel, 'description')
-        if not kwargs['image']:  # TBD: prefer iTunes or RSS image
+        if not kwargs['image']:  # TBD: prefer iTunes image over RSS image?
             kwargs['image'] = _gettag(channel, 'itunes:image', _to_image)
-        # TODO: HTTP last-modified header als fallback for pubdate?
 
         episodes = []
         for item in channel.iter(tag='item'):
@@ -178,7 +211,7 @@ class FeedsDirectory(PodcastDirectory):
                 episodes.append(_to_episode(item, kwargs['uri']))
             except Exception as e:
                 logger.warn('Skipping episode for %s: %s', uri, e)
-        kwargs['episodes'] = sorted(episodes, key=_by_pubdate, reverse=True)
+        kwargs['episodes'] = sorted(episodes, key=_pubdate, reverse=True)
 
         return Podcast(**kwargs)
 
@@ -197,27 +230,25 @@ class FeedsDirectory(PodcastDirectory):
             return None
 
     def refresh(self, uri=None):
+        podcasts = {p.ref.uri: p for p in self._podcasts}
+        episodes = {e.ref.uri: e for e in self._episodes}
         self._cache.clear()
-        podcasts = []
-        episodes = []
-        for feedurl in self._feeds:
+        for feedurl in self._config['feeds']:
             try:
                 podcast = self.get(feedurl)
             except Exception as e:
                 logger.error('Error loading podcast %s: %s', feedurl, e)
-                continue  # TODO: keep existing entry?
+                continue  # keep existing entry
             try:
-                entry = self._index_podcast(podcast)
+                p = self._index_podcast(podcast)
+                for episode in podcast.episodes:
+                    e = self._index_episode(episode, p.index)
+                    episodes[e.ref.uri] = e
+                podcasts[p.ref.uri] = p
             except Exception as e:
-                logger.error('Index error: %s', e)
-            for episode in podcast.episodes:
-                try:
-                    episodes.append(self._index_episode(episode, entry.index))
-                except Exception as e:
-                    logger.error('Index error: %s', e)
-            podcasts.append(entry)
-        self._podcasts = sorted(podcasts, key=_by_pubdate, reverse=True)
-        self._episodes = sorted(episodes, key=_by_pubdate, reverse=True)
+                logger.error('Error indexing podcast %s: %s', feedurl, e)
+        self._podcasts = sorted(podcasts.values(), key=_pubdate, reverse=True)
+        self._episodes = sorted(episodes.values(), key=_pubdate, reverse=True)
 
     def _browse_episodes(self, uri, limit=None):
         refs = []
@@ -284,36 +315,3 @@ class FeedsDirectory(PodcastDirectory):
                 index[name] = getattr(episode, name).lower()
         index[None] = '\n'.join(index.values())
         return self.IndexEntry(ref, index, episode.pubdate)
-
-    def _cache(self, cache_size=0, cache_ttl=0, **kwargs):
-        from .cachetools import LRUCache
-        import time
-
-        class Cache(LRUCache):
-
-            def __init__(self, maxsize, ttl, timer=time.time):
-                super(Cache, self).__init__(maxsize)
-                self.__expires = {}
-                self.__timer = timer
-                self.__ttl = ttl
-
-            def __getitem__(self, key):
-                if self.__expires[key] < self.__timer():
-                    logger.debug('Cached feed expired: %s', key)
-                    del self[key]
-                return super(Cache, self).__getitem__(key)
-
-            def __setitem__(self, key, value):
-                t = self.__timer()
-                for k in self.keys():
-                    if self.__expires[k] < t:
-                        logger.debug('Cached feed expired: %s', k)
-                        del self[k]
-                super(Cache, self).__setitem__(key, value)
-                self.__expires[key] = self.__timer() + self.__ttl
-
-            def __delitem__(self, key):
-                super(Cache, self).__delitem__(key)
-                del self.__expires[key]
-
-        return Cache(cache_size, cache_ttl)

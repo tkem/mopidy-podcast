@@ -15,15 +15,9 @@ class ExtensionTest(unittest.TestCase):
 
     def test_get_config_schema(self):
         ext = Extension()
-
         schema = ext.get_config_schema()
-        self.assertIn('browse_label', schema)
+        self.assertIn('root_name', schema)
         self.assertIn('browse_limit', schema)
         self.assertIn('search_limit', schema)
-        self.assertIn('sort_order', schema)
+        self.assertIn('search_details', schema)
         self.assertIn('update_interval', schema)
-        self.assertIn('cache_size', schema)
-        self.assertIn('cache_ttl', schema)
-        self.assertIn('timeout', schema)
-        self.assertIn('feeds', schema)
-        self.assertIn('feeds_label', schema)

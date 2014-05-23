@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from mopidy import config, ext
 
-__version__ = '0.5.0'
+__version__ = '1.0.0'
 
 
 class Extension(ext.Extension):
@@ -18,20 +18,25 @@ class Extension(ext.Extension):
 
     def get_config_schema(self):
         schema = super(Extension, self).get_config_schema()
-        schema['browse_label'] = config.String()
+        schema['root_name'] = config.String()
         schema['browse_limit'] = config.Integer(optional=True, minimum=1)
         schema['search_limit'] = config.Integer(optional=True, minimum=1)
-        schema['search_results'] = config.String(choices=['title', 'full'])
-        schema['sort_order'] = config.String(choices=['asc', 'desc'])
-        schema['update_interval'] = config.Integer(minimum=1)
-        schema['cache_size'] = config.Integer(minimum=1)
-        schema['cache_ttl'] = config.Integer(minimum=1)
-        schema['timeout'] = config.Integer(optional=True, minimum=1)
-
+        schema['search_details'] = config.Boolean()
+        schema['update_interval'] = config.Integer(minimum=60)
         # feeds directory provider config
         schema['feeds'] = config.List(optional=True)
-        schema['feeds_label'] = config.String(optional=True)
-
+        schema['feeds_root_name'] = config.String()
+        schema['feeds_cache_size'] = config.Integer(minimum=1)
+        schema['feeds_cache_ttl'] = config.Integer(minimum=1)
+        schema['feeds_timeout'] = config.Integer(optional=True, minimum=1)
+        # no longer used/needed
+        schema['browse_label'] = config.Deprecated()
+        schema['cache_size'] = config.Deprecated()
+        schema['cache_ttl'] = config.Deprecated()
+        schema['feeds_label'] = config.Deprecated()
+        schema['search_results'] = config.Deprecated()
+        schema['sort_order'] = config.Deprecated()
+        schema['timeout'] = config.Deprecated()
         return schema
 
     def setup(self, registry):

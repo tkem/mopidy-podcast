@@ -1,6 +1,6 @@
 Revision history for Mopidy-Podcast
 
-0.5.0   2014-05-10
+1.0.0   2014-05-24
 
         - Move RSS parsing to FeedsDirectory.
 
@@ -9,8 +9,6 @@ Revision history for Mopidy-Podcast
         - Add search_results config value.
 
         - Add uri_schemes property to PodcastDirectory.
-
-        - Change data types for pubdate, duration.
 
         - Add uri property to Podcast and Episode.
 

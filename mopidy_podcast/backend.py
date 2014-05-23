@@ -1,14 +1,13 @@
 from __future__ import unicode_literals
 
 import logging
-import threading
-
 import pykka
+import threading
 
 from mopidy import backend
 
 from . import Extension
-from .dispatcher import PodcastDirectoryDispatcher
+from .controller import PodcastDirectoryController
 from .library import PodcastLibraryProvider
 from .playback import PodcastPlaybackProvider
 
@@ -26,7 +25,7 @@ class PodcastBackend(pykka.ThreadingActor, backend.Backend):
         directories = [cls(config) for cls in self.directories]
         logger.info('Starting %s directories: %s', Extension.dist_name,
                     ', '.join(d.__class__.__name__ for d in directories))
-        self.directory = PodcastDirectoryDispatcher(directories)
+        self.directory = PodcastDirectoryController(directories)
         self.library = PodcastLibraryProvider(config, backend=self)
         self.playback = PodcastPlaybackProvider(audio=audio, backend=self)
         self.lock = threading.RLock()

@@ -1,14 +1,16 @@
 Mopidy-Podcast API reference
 ========================================================================
 
-.. warning:: API stability
+Mopidy-Podcast extensions that wish to provide alternate podcast
+directory services need to subclass
+:class:`mopidy_podcast.directory.PodcastDirectory` and install and
+configure it with a Mopidy extension.  Directory subclasses need to be
+added to Mopidy's registry with key :const:`podcast:directory`, e.g.::
 
-    Only APIs documented here are public and open for use by
-    Mopidy-Podcast extensions.  Backward-incompatible changes to the
-    API may, and probably will occur.  From Mopidy-Podcast 1.0 and
-    onwards, the API is intended to remain stable.
-
+  class MyPodcastExtension(ext.Extension):
+      def setup(self, registry):
+          registry.add('podcast:directory', MyPodcastDirectory)
 
 .. toctree::
-   directory
    models
+   directory

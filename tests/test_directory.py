@@ -5,7 +5,7 @@ import unittest
 import pykka
 
 from mopidy_podcast.directory import PodcastDirectory
-from mopidy_podcast.dispatcher import PodcastDirectoryDispatcher
+from mopidy_podcast.controller import PodcastDirectoryController
 from mopidy_podcast.models import Ref
 
 
@@ -33,7 +33,7 @@ class TestDirectory(PodcastDirectory):
 class DirectoryTest(unittest.TestCase):
 
     def setUp(self):
-        self.directory = PodcastDirectoryDispatcher([TestDirectory({})])
+        self.directory = PodcastDirectoryController([TestDirectory({})])
 
     def tearDown(self):
         pykka.ActorRegistry.stop_all()

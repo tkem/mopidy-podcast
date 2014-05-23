@@ -25,10 +25,10 @@ class FeedsTest(unittest.TestCase):
         self.feeds = FeedsDirectory({
             'podcast': {
                 'feeds': [],
-                'feeds_label': 'Feeds',
-                'cache_size': 1,
-                'cache_ttl': 0,
-                'timeout': None
+                'feeds_root_name': 'Feeds',
+                'feeds_cache_size': 1,
+                'feeds_cache_ttl': 0,
+                'feeds_timeout': None
             }
         })
 

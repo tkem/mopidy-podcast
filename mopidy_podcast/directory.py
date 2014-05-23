@@ -2,15 +2,7 @@ from __future__ import unicode_literals
 
 
 class PodcastDirectory(object):
-    """Podcast directory interface.
-
-    Mopidy-Podcast extensions that wish to provide alternate podcast
-    directory services need to subclass :class:`PodcastDirectory` and
-    install and configure it with a Mopidy extension.  Directory
-    subclasses need to be added to :class:`Mopidy.ext.Registry` with
-    the key `podcast:directory`.
-
-    """
+    """Podcast directory provider."""
 
     name = None
     """Name of the podcast directory implementation."""
@@ -33,9 +25,9 @@ class PodcastDirectory(object):
         raise NotImplementedError
 
     def search(self, uri, terms, attr=None, type=None, limit=None):
-        """Search for podcasts and/or episodes."""
+        """Search podcasts and episodes at the given `uri` for `terms`."""
         raise NotImplementedError
 
     def refresh(self, uri=None):
-        """Update the podcast directory or a given `uri`."""
+        """Refresh the podcast directory."""
         pass

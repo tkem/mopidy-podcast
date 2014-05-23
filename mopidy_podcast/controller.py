@@ -1,17 +1,19 @@
 from __future__ import unicode_literals
 
 import logging
-
 import pykka
 
-from .directory import PodcastDirectory
 from .models import Ref
 from .timers import DebugTimer
-from .uritools import urijoin, urisplit, uriunsplit
+from .uritools import urisplit, uriunsplit
 
 BASE_URI = 'podcast:'
 
 logger = logging.getLogger(__name__)
+
+
+def _root_uri(name):
+    return BASE_URI + '//' + name + '/'
 
 
 def _transform(base, model):
@@ -50,11 +52,9 @@ class PodcastDirectoryActor(pykka.ThreadingActor):
         logger.debug('Stopping %s', self.directory)
 
 
-class PodcastDirectoryDispatcher(PodcastDirectory):
+class PodcastDirectoryController(object):
 
     root_uri = BASE_URI
-
-    root_directories = []
 
     def __init__(self, directories):
         self.root_directories = []
@@ -63,16 +63,14 @@ class PodcastDirectoryDispatcher(PodcastDirectory):
 
         for d in directories:
             if d.root_name:
-                self.root_directories.append(Ref.directory(
-                    uri=urijoin(self.root_uri, '//' + d.name + '/'),
-                    name=d.root_name
-                ))
+                root = Ref.directory(uri=_root_uri(d.name), name=d.root_name)
+                self.root_directories.append(root)
             proxy = PodcastDirectoryActor.start(d).proxy()
             self._proxies[d.name] = proxy
             self._schemes.update(dict.fromkeys(d.uri_schemes, proxy))
 
     def get(self, uri):
-        proxy, uribase, uriref = self._lookup(uri)
+        uribase, uriref, proxy = self._lookup(uri)
         podcast = proxy.get(uriref).get()
         episodes = (_transform(uribase, e) for e in podcast.episodes if e.uri)
         return podcast.copy(uri=uri, episodes=episodes)
@@ -80,14 +78,14 @@ class PodcastDirectoryDispatcher(PodcastDirectory):
     def browse(self, uri, limit=None):
         if not uri or uri == self.root_uri:
             return self.root_directories
-        proxy, uribase, uriref = self._lookup(uri)
+        uribase, uriref, proxy = self._lookup(uri)
         refs = proxy.browse(uriref, limit).get() or []
         return [_transform(uribase, ref) for ref in refs]
 
     def search(self, uri, terms, attr=None, type=None, limit=None):
         if not uri or uri == self.root_uri:
             return self._search(terms, attr, type, limit)
-        proxy, uribase, uriref = self._lookup(uri)
+        uribase, uriref, proxy = self._lookup(uri)
         refs = proxy.search(uriref, terms, attr, type, limit).get() or []
         return [_transform(uribase, ref) for ref in refs]
 
@@ -95,7 +93,7 @@ class PodcastDirectoryDispatcher(PodcastDirectory):
         if not uri or uri == self.root_uri:
             futures = [p.refresh() for p in self._proxies.values()]
         else:
-            proxy, uribase, uriref = self._lookup(uri)
+            uribase, uriref, proxy = self._lookup(uri)
             futures = [proxy.refresh(uriref)]
         if not async:
             pykka.get_all(futures)
@@ -106,30 +104,29 @@ class PodcastDirectoryDispatcher(PodcastDirectory):
 
     def _lookup(self, uri):
         if uri.startswith(self.root_uri + '//'):
-            base = urisplit(uri)
-            proxy = self._proxies[base.authority]
-            uriref = uriunsplit((None, None) + base[2:])
+            uribase = urisplit(uri)
+            uriref = uriunsplit((None, None) + uribase[2:])
+            proxy = self._proxies[uribase.authority]
         elif uri.startswith(self.root_uri):
-            base = urisplit(uri[len(self.root_uri):])
-            proxy = self._schemes[base.scheme]
-            uriref = base.geturi()
+            uribase = urisplit(uri[len(self.root_uri):])
+            uriref = uribase.geturi()
+            proxy = self._schemes[uribase.scheme]
         else:
             raise LookupError('Invalid podcast URI: %s' % uri)
-        return (proxy, base, uriref)
+        return (uribase, uriref, proxy)
 
     def _search(self, terms, attr=None, type=None, limit=None):
         results = []
         for name, proxy in self._proxies.items():
             results.append((name, proxy.search('/', terms, attr, type, limit)))
-        # merge results and filter duplicates
+        # merge results, filter duplicates by uri
         merged = {}
         for name, future in results:
             try:
                 refs = future.get() or []
-                base = urisplit(urijoin(self.root_uri, '//' + name + '/'))
-                result = [_transform(base, ref) for ref in refs]
-                merged.update((ref.uri, ref) for ref in result)
+                base = urisplit(_root_uri(name))
+                results = [_transform(base, ref) for ref in refs]
+                merged.update((ref.uri, ref) for ref in results)
             except Exception as e:
-                logger.error('Searching podcast directory "%s" failed: %r',
-                             name, e)
-        return merged.values()[:limit]
+                logger.error('Searching "%s" failed: %s', name, e)
+        return merged.values()[:limit]  # arbitrary selection
