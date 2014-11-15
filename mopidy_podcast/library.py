@@ -25,12 +25,6 @@ _QUERY_MAPPING = {
 logger = logging.getLogger(__name__)
 
 
-def _wrap(ref, type=None):
-    # TODO: translating no longer necessary with mopidy v0.19?
-    name = ref.name.replace('"', "'").replace('/', '_')
-    return ref.copy(name=name, type=type or ref.type)
-
-
 class PodcastLibraryProvider(backend.LibraryProvider):
 
     root_directory = Ref.directory(uri='podcast:', name='Podcasts')
@@ -93,14 +87,12 @@ class PodcastLibraryProvider(backend.LibraryProvider):
     def _browse(self, uri, limit=None):
         refs = []
         for ref in self.backend.directory.browse(uri, limit):
-            if ref.type == Ref.DIRECTORY:
-                refs.append(_wrap(ref))
-            elif ref.type == Ref.PODCAST:
-                refs.append(_wrap(ref, Ref.DIRECTORY))
+            if ref.type == Ref.PODCAST:
+                refs.append(Ref.album(uri=ref.uri, name=ref.name))
             elif ref.type == Ref.EPISODE:
-                refs.append(_wrap(ref, Ref.TRACK))
+                refs.append(Ref.track(uri=ref.uri, name=ref.name))
             else:
-                logger.warn('Invalid podcast browse result: %r', ref)
+                refs.append(ref)
         return refs
 
     def _search(self, query, uris=None, limit=None):
