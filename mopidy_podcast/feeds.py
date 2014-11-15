@@ -166,7 +166,7 @@ class FeedsDirectory(PodcastDirectory):
         channel = _getchannel(uri, self._config['feeds_timeout'])
 
         kwargs = {}
-        kwargs['uri'], _ = uritools.uridefrag(uri)
+        kwargs['uri'], _ = uritools.uridefrag(uri)  # remove fragment, if any
         for name in ('title', 'link', 'copyright', 'language'):
             kwargs[name] = _gettag(channel, name)
         for name in ('author', 'subtitle', 'summary'):

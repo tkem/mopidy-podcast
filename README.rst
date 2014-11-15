@@ -8,34 +8,38 @@ podcasts.
 Installation
 ------------------------------------------------------------------------
 
-The latest PyPi version can be installed by running::
+Mopidy-Podcast can be installed using pip_ by running::
 
     pip install Mopidy-Podcast
-
-You can also install Debian/Ubuntu packages from the `APT repository`_::
-
-    wget -q -O - http://apt.kemmer.co.at/tkem.gpg | sudo apt-key add -
-    sudo wget -q -O /etc/apt/sources.list.d/tkem.list http://apt.kemmer.co.at/tkem.list
-    sudo apt-get update
-    sudo apt-get install mopidy-podcast
 
 
 Project Resources
 ------------------------------------------------------------------------
 
-.. image:: http://img.shields.io/pypi/v/Mopidy-Podcast.svg
+.. image:: http://img.shields.io/pypi/v/Mopidy-Podcast.svg?style=flat
     :target: https://pypi.python.org/pypi/Mopidy-Podcast/
     :alt: Latest PyPI version
 
-.. image:: http://img.shields.io/pypi/dm/Mopidy-Podcast.svg
+.. image:: http://img.shields.io/pypi/dm/Mopidy-Podcast.svg?style=flat
     :target: https://pypi.python.org/pypi/Mopidy-Podcast/
     :alt: Number of PyPI downloads
+
+.. image:: http://img.shields.io/travis/tkem/mopidy-podcast/master.svg?style=flat
+    :target: https://travis-ci.org/tkem/mopidy-podcast/
+    :alt: Travis CI build status
+
+.. image:: http://img.shields.io/coveralls/tkem/mopidy-podcast/master.svg?style=flat
+   :target: https://coveralls.io/r/tkem/mopidy-podcast/
+   :alt: Test coverage
+
+.. image:: https://readthedocs.org/projects/mopidy-podcast/badge/?version=latest&style=flat
+   :target: https://readthedocs.org/projects/mopidy-podcast/?badge=latest
+   :alt: Documentation Status
 
 - `Documentation`_
 - `Issue Tracker`_
 - `Source Code`_
 - `Change Log`_
-- `Development Snapshot`_
 
 
 License
@@ -47,10 +51,12 @@ Licensed under the `Apache License, Version 2.0`_.
 
 
 .. _Mopidy: http://www.mopidy.com/
-.. _APT repository: http://apt.kemmer.co.at/
+
+.. _pip: https://pip.pypa.io/en/latest/
+
 .. _Documentation: http://mopidy-podcast.readthedocs.org/en/latest/
 .. _Issue Tracker: https://github.com/tkem/mopidy-podcast/issues/
 .. _Source Code: https://github.com/tkem/mopidy-podcast
-.. _Change Log: http://raw.github.com/tkem/mopidy-podcast/master/Changes
-.. _Development Snapshot: https://github.com/tkem/mopidy-podcast/tarball/master#egg=Mopidy-Podcast-dev
+.. _Change Log: https://github.com/tkem/mopidy-podcast/blob/master/CHANGES.rst
+
 .. _Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0

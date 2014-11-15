@@ -16,9 +16,14 @@ logger = logging.getLogger(__name__)
 
 class PodcastBackend(pykka.ThreadingActor, backend.Backend):
 
-    uri_schemes = ['podcast']
-
     directories = []
+
+    @property
+    def uri_schemes(self):
+        schemes = ['podcast']
+        for cls in self.directories:
+            schemes.extend('podcast+' + scheme for scheme in cls.uri_schemes)
+        return schemes
 
     def __init__(self, config, audio):
         super(PodcastBackend, self).__init__()
