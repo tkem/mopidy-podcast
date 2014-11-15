@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import cachetools
 import collections
 import contextlib
 import datetime
@@ -8,15 +9,13 @@ import itertools
 import logging
 import operator
 import re
-import time
+import uritools
 import urllib2
 import xml.etree.ElementTree
 
 from . import Extension
-from .cachetools import LRUCache, cachedmethod
 from .directory import PodcastDirectory
 from .models import Podcast, Episode, Image, Enclosure, Ref
-from .uritools import uridefrag
 
 _DURATION_RE = re.compile(r"""
 (?:
@@ -35,6 +34,16 @@ _PODCAST_SEARCH_ATTRS = ('title', 'author', 'category', 'subtitle', 'summary')
 _EPISODE_SEARCH_ATTRS = ('title', 'author', 'subtitle', 'summary')
 
 logger = logging.getLogger(__name__)
+
+
+def _feeds_cache(feeds_cache_size=None, feeds_cache_ttl=None, **kwargs):
+    """Cache factory"""
+    if feeds_cache_size is None:
+        return None  # mainly for testing/debugging
+    elif feeds_cache_ttl is None:
+        return cachetools.LRUCache(feeds_cache_size)
+    else:
+        return cachetools.TTLCache(feeds_cache_size, feeds_cache_ttl)
 
 
 def _getchannel(uri, timeout=None):
@@ -135,34 +144,6 @@ def _pubdate(model):
     return model.pubdate or datetime.datetime.min
 
 
-class FeedsCache(LRUCache):
-
-    def __init__(self, maxsize, ttl, timer=time.time):
-        super(FeedsCache, self).__init__(maxsize)
-        self.__expires = {}
-        self.__timer = timer
-        self.__ttl = ttl
-
-    def __getitem__(self, key):
-        if self.__expires[key] < self.__timer():
-            logger.debug('Cached feed expired: %s', key)
-            del self[key]
-        return super(FeedsCache, self).__getitem__(key)
-
-    def __setitem__(self, key, value):
-        t = self.__timer()
-        for k in self.keys():
-            if self.__expires[k] < t:
-                logger.debug('Cached feed expired: %s', k)
-                del self[k]
-        super(FeedsCache, self).__setitem__(key, value)
-        self.__expires[key] = self.__timer() + self.__ttl
-
-    def __delitem__(self, key):
-        super(FeedsCache, self).__delitem__(key)
-        del self.__expires[key]
-
-
 class FeedsDirectory(PodcastDirectory):
 
     IndexEntry = collections.namedtuple('Entry', 'ref index pubdate')
@@ -173,22 +154,19 @@ class FeedsDirectory(PodcastDirectory):
 
     def __init__(self, config):
         super(FeedsDirectory, self).__init__(config)
-        self._config = config[Extension.ext_name]
-        self._cache = FeedsCache(
-            self._config['feeds_cache_size'],
-            self._config['feeds_cache_ttl']
-        )
+        self._config = ext_config = config[Extension.ext_name]
+        self._cache = _feeds_cache(**ext_config)
         self._podcasts = []
         self._episodes = []
 
-        self.root_name = self._config['feeds_root_name']  # for browsing
+        self.root_name = ext_config['feeds_root_name']  # for browsing
 
-    @cachedmethod(getcache=operator.attrgetter('_cache'))
+    @cachetools.cachedmethod(operator.attrgetter('_cache'))
     def get(self, uri):
         channel = _getchannel(uri, self._config['feeds_timeout'])
 
         kwargs = {}
-        kwargs['uri'], _ = uridefrag(uri)  # strip fragment if present
+        kwargs['uri'], _ = uritools.uridefrag(uri)
         for name in ('title', 'link', 'copyright', 'language'):
             kwargs[name] = _gettag(channel, name)
         for name in ('author', 'subtitle', 'summary'):

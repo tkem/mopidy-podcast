@@ -24,8 +24,10 @@ setup(
     include_package_data=True,
     install_requires=[
         'setuptools',
-        'Mopidy >= 0.18',
-        'Pykka >= 1.1'
+        'Mopidy >= 0.19',
+        'Pykka >= 1.1.0',
+        'cachetools >= 0.7.0',
+        'uritools >= 0.8.0'
     ],
     test_suite='nose.collector',
     tests_require=[

@@ -4,5 +4,5 @@ omit =
     */python?.?/*
     */site-packages/nose/*
     */mopidy/*
-    */cachetools.py
-    */uritools.py
+    */cachetools/*
+    */uritools/*

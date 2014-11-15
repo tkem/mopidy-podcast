@@ -1,8 +1,7 @@
 from __future__ import unicode_literals
 
 from mopidy import backend
-
-from .uritools import uridefrag
+from uritools import uridefrag
 
 
 class PodcastPlaybackProvider(backend.PlaybackProvider):

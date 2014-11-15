@@ -2,10 +2,9 @@ from __future__ import unicode_literals
 
 import logging
 import pykka
+import uritools
 
 from .models import Ref
-from .timers import DebugTimer
-from .uritools import urisplit, uriunsplit
 
 BASE_URI = 'podcast:'
 
@@ -30,20 +29,16 @@ class PodcastDirectoryActor(pykka.ThreadingActor):
         self.directory = directory
 
     def get(self, uri):
-        with DebugTimer(logger, 'Getting %s from %s' % (uri, self.directory)):
-            return self.directory.get(uri)
+        return self.directory.get(uri)
 
     def browse(self, uri, limit=None):
-        with DebugTimer(logger, 'Browsing %s in %s' % (uri, self.directory)):
-            return self.directory.browse(uri, limit)
+        return self.directory.browse(uri, limit)
 
     def search(self, uri, terms, attr=None, type=None, limit=None):
-        with DebugTimer(logger, 'Searching %s' % self.directory):
-            return self.directory.search(uri, terms, attr, type, limit)
+        return self.directory.search(uri, terms, attr, type, limit)
 
     def refresh(self, uri=None):
-        with DebugTimer(logger, 'Refreshing %s' % self.directory):
-            return self.directory.refresh(uri)
+        return self.directory.refresh(uri)
 
     def on_start(self):
         logger.debug('Starting %s', self.directory)
@@ -104,11 +99,11 @@ class PodcastDirectoryController(object):
 
     def _lookup(self, uri):
         if uri.startswith(self.root_uri + '//'):
-            uribase = urisplit(uri)
-            uriref = uriunsplit((None, None) + uribase[2:])
+            uribase = uritools.urisplit(uri)
+            uriref = uritools.uriunsplit((None, None) + uribase[2:])
             proxy = self._proxies[uribase.authority]
         elif uri.startswith(self.root_uri):
-            uribase = urisplit(uri[len(self.root_uri):])
+            uribase = uritools.urisplit(uri[len(self.root_uri):])
             uriref = uribase.geturi()
             proxy = self._schemes[uribase.scheme]
         else:
@@ -124,7 +119,7 @@ class PodcastDirectoryController(object):
         for name, future in results:
             try:
                 refs = future.get() or []
-                base = urisplit(_root_uri(name))
+                base = uritools.urisplit(_root_uri(name))
                 results = [_transform(base, ref) for ref in refs]
                 merged.update((ref.uri, ref) for ref in results)
             except Exception as e:

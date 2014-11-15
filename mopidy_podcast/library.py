@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import logging
 import operator
+import uritools
 
 from mopidy import backend
 from mopidy.models import Album, Artist, Track, SearchResult
@@ -9,8 +10,6 @@ from mopidy.models import Album, Artist, Track, SearchResult
 from . import Extension
 from .models import Ref
 from .query import Query
-from .timers import debug_timer
-from .uritools import uridefrag
 
 _QUERY_MAPPING = {
     'album': ('title', Ref.PODCAST),
@@ -34,15 +33,12 @@ def _wrap(ref, type=None):
 
 class PodcastLibraryProvider(backend.LibraryProvider):
 
+    root_directory = Ref.directory(uri='podcast:', name='Podcasts')
+
     def __init__(self, config, backend):
         super(PodcastLibraryProvider, self).__init__(backend)
         self._config = config[Extension.ext_name]
         self._lookup = {}
-        # root directory for browsing
-        self.root_directory = Ref.directory(
-            uri=backend.directory.root_uri,
-            name=self._config['root_name']
-        )
 
     def lookup(self, uri):
         try:
@@ -50,7 +46,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         except KeyError:
             logger.debug('Podcast lookup cache miss: %s', uri)
         try:
-            base, fragment = uridefrag(uri)
+            base, fragment = uritools.uridefrag(uri)
             if fragment:
                 self._lookup = {t.uri: t for t in self._tracks(base)}
                 return [self._lookup[uri]]
@@ -94,7 +90,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             logger.error('Searching podcasts failed: %s', e)
             return None
 
-    @debug_timer(logger, 'Browsing podcasts')
     def _browse(self, uri, limit=None):
         refs = []
         for ref in self.backend.directory.browse(uri, limit):
@@ -108,7 +103,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 logger.warn('Invalid podcast browse result: %r', ref)
         return refs
 
-    @debug_timer(logger, 'Searching podcasts')
     def _search(self, query, uris=None, limit=None):
         # only single search attribute supported
         if len(query) != 1 or query.keys()[0] not in _QUERY_MAPPING:
@@ -134,7 +128,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             tracks = filter(query.match_track, tracks)
         return SearchResult(albums=albums, tracks=tracks)
 
-    @debug_timer(logger, 'Loading search results')
     def _load_search_results(self, refs):
         directory = self.backend.directory
         albums = []
@@ -152,7 +145,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 logger.warn('Skipping search result %s: %s', ref.uri, e)
         return (albums, tracks)
 
-    @debug_timer(logger, 'Converting search results')
     def _search_results(self, refs):
         albums = []
         tracks = []
@@ -165,7 +157,6 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 logger.warn('Invalid podcast search result: %r', ref)
         return (albums, tracks)
 
-    @debug_timer(logger, 'Getting tracks for podcast')
     def _tracks(self, uri, limit=None):
         podcast = self.backend.directory.get(uri)
         album = self._album(podcast)
