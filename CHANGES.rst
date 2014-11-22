@@ -1,4 +1,4 @@
-1.1.0 UNRELEASED
+1.1.0 2014-11-22
 ----------------
 
 - Improve `podcast` URI scheme.
@@ -6,6 +6,8 @@
 - Report podcasts as albums when browsing.
 
 - Update dependencies.
+
+- Update unit tests.
 
 
 1.0.0 2014-05-24
