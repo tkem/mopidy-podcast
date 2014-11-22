@@ -10,10 +10,6 @@ directory provider.  For configuring external :ref:`extensions
 General Configuration Values
 ------------------------------------------------------------------------
 
-.. confval:: podcast/root_name
-
-   The top-level directory name for browsing podcasts.
-
 .. confval:: podcast/browse_limit
 
    The maximum number of browse results and podcast episodes to show.
