@@ -74,7 +74,9 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             logger.error('Finding podcasts failed: %s', e)
             return None
 
-    def search(self, query=None, uris=None):
+    def search(self, query=None, uris=None, exact=False):
+        if exact:
+            return self.find_exact(query, uris)
         if not query:
             return None
         try:
