@@ -66,7 +66,7 @@ class PodcastDirectoryController(object):
         uribase, uriref, proxy = self._lookup(uri)
         podcast = proxy.get(uriref).get()
         # FIXME: episode w/o uri shouldn't be possible...
-        episodes = (transform(uribase, e) for e in podcast.episodes if e.uri)
+        episodes = [transform(uribase, e) for e in podcast.episodes if e.uri]
         return podcast.copy(uri=uri, episodes=episodes)
 
     def browse(self, uri, limit=None):
