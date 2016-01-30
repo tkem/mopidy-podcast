@@ -1,37 +1,50 @@
 from __future__ import unicode_literals
 
-import unittest
-import pykka
+import pytest
 
-from mopidy_podcast.backend import PodcastBackend
-from mopidy import core
+from mopidy_podcast import feeds
 
 
-class LibraryTest(unittest.TestCase):
-    config = {
-        'podcast': {
-            'root_name': '',
-            'browse_limit': None,
-            'search_limit': None,
-            'update_interval': 86400
-        }
-    }
+def test_no_default_root_directory(library):
+    assert library.root_directory is None  # TODO
 
-    def setUp(self):
-        self.backend = PodcastBackend.start(self.config, None).proxy()
-        self.library = core.Core(backends=[self.backend]).library
 
-    def tearDown(self):
-        pykka.ActorRegistry.stop_all()
+@pytest.mark.parametrize('filename', ['directory.xml', 'rssfeed.xml'])
+def test_browse(config, library, filename, abspath):
+    feed = feeds.parse(abspath(filename))
+    newest_first = config['podcast']['browse_order'] == 'desc'
+    assert library.browse(feed.uri) == list(feed.items(newest_first))
+    assert feed.uri in library.backend.feeds
 
-    def test_search_artist(self):
-        self.library.search(artist=['foo'])
-        # TODO: write tests
 
-    def test_search_album(self):
-        self.library.search(album=['foo'])
-        # TODO: write tests
+@pytest.mark.parametrize('filename', ['rssfeed.xml'])
+def test_get_images(library, filename, abspath):
+    feed = feeds.parse(abspath(filename))
+    for uri, images in feed.images():
+        assert library.get_images([uri]) == {uri: images}
+    images = {uri: images for uri, images in feed.images()}
+    assert library.get_images(list(images)) == images
+    assert feed.uri in library.backend.feeds
 
-    def test_search_date(self):
-        self.library.search(date=['2014-02-01'])
-        # TODO: write tests
+
+@pytest.mark.parametrize('filename', ['rssfeed.xml'])
+def test_lookup(config, library, filename, abspath):
+    feed = feeds.parse(abspath(filename))
+    for track in feed.tracks():
+        assert library.lookup(track.uri) == [track]
+    newest_first = config['podcast']['lookup_order'] == 'desc'
+    assert library.lookup(feed.uri) == list(feed.tracks(newest_first))
+    assert feed.uri in library.backend.feeds
+
+
+@pytest.mark.parametrize('filename', ['rssfeed.xml'])
+def test_refresh(library, filename, abspath):
+    feed = feeds.parse(abspath(filename))
+    tracks = library.lookup(feed.uri)
+    assert feed.uri in library.backend.feeds
+    library.refresh(tracks[0].uri)
+    assert feed.uri not in library.backend.feeds
+    library.lookup(tracks[0].uri)
+    assert feed.uri in library.backend.feeds
+    library.refresh()
+    assert not library.backend.feeds

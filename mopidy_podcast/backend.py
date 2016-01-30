@@ -1,61 +1,55 @@
 from __future__ import unicode_literals
 
+import contextlib
 import logging
-import pykka
-import threading
+
+import cachetools
 
 from mopidy import backend
 
-from . import Extension
-from .controller import PodcastDirectoryController
+import pykka
+
+from . import Extension, feeds
 from .library import PodcastLibraryProvider
 from .playback import PodcastPlaybackProvider
 
 logger = logging.getLogger(__name__)
 
 
+class PodcastFeedCache(cachetools.TTLCache):
+
+    pykka_traversable = True
+
+    def __init__(self, config):
+        # FIXME: "missing" parameter will be deprecated in cachetools v1.2
+        super(PodcastFeedCache, self).__init__(
+            maxsize=config[Extension.ext_name]['cache_size'],
+            ttl=config[Extension.ext_name]['cache_ttl'],
+            missing=self.__missing
+        )
+        self.__opener = Extension.get_url_opener(config)
+        self.__timeout = config[Extension.ext_name]['timeout']
+
+    def __missing(self, uri):
+        ext_name, _, feedurl = uri.partition('+')
+        assert ext_name == Extension.ext_name
+        f = self.__opener.open(feedurl, timeout=self.__timeout)
+        with contextlib.closing(f) as source:
+            feed = feeds.parse(source)
+        return feed
+
+
 class PodcastBackend(pykka.ThreadingActor, backend.Backend):
 
-    directories = []
-
-    @property
-    def uri_schemes(self):
-        schemes = ['podcast']
-        for cls in self.directories:
-            schemes.extend('podcast+' + scheme for scheme in cls.uri_schemes)
-        return schemes
+    uri_schemes = [
+        'podcast',
+        'podcast+file',
+        'podcast+http',
+        'podcast+https'
+    ]
 
     def __init__(self, config, audio):
         super(PodcastBackend, self).__init__()
-        directories = [cls(config) for cls in self.directories]
-        logger.info('Starting %s directories: %s', Extension.dist_name,
-                    ', '.join(d.__class__.__name__ for d in directories))
-        self.directory = PodcastDirectoryController(directories)
+        self.feeds = PodcastFeedCache(config)
         self.library = PodcastLibraryProvider(config, backend=self)
-        self.playback = PodcastPlaybackProvider(audio=audio, backend=self)
-        self.lock = threading.RLock()
-
-        interval = config[Extension.ext_name]['update_interval']
-
-        def update():
-            logger.info('Refreshing %s directories', Extension.dist_name)
-            self.directory.refresh(async=True)
-            self.timer = self._timer(interval, update)
-        update()
-
-    def on_stop(self):
-        with self.lock:
-            self.timer.cancel()
-        logger.info('Stopping %s directories', Extension.dist_name)
-        self.directory.stop()
-        logger.debug('Stoppped %s directories', Extension.dist_name)
-
-    def _timer(self, interval, func):
-        if not interval or not func:
-            return None
-        with self.lock:
-            if self.actor_stopped.is_set():
-                return None
-            timer = threading.Timer(interval, func)
-            timer.start()
-            return timer
+        self.playback = PodcastPlaybackProvider(audio, backend=self)

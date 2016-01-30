@@ -1,23 +1,59 @@
 from __future__ import unicode_literals
 
-import unittest
+import urllib2
 
-from mopidy_podcast import Extension
+import mock
+
+import pytest
+
+from mopidy_podcast import Extension, backend
 
 
-class ExtensionTest(unittest.TestCase):
+def test_get_default_config():
+    config = Extension().get_default_config()
+    assert '[' + Extension.ext_name + ']' in config
+    assert 'enabled = true' in config
 
-    def test_get_default_config(self):
-        ext = Extension()
-        config = ext.get_default_config()
-        self.assertIn('[podcast]', config)
-        self.assertIn('enabled = true', config)
 
-    def test_get_config_schema(self):
-        ext = Extension()
-        schema = ext.get_config_schema()
-        self.assertIn('root_name', schema)
-        self.assertIn('browse_limit', schema)
-        self.assertIn('search_limit', schema)
-        self.assertIn('search_details', schema)
-        self.assertIn('update_interval', schema)
+def test_get_config_schema():
+    schema = Extension().get_config_schema()
+    assert 'browse_root' in schema
+    assert 'browse_order' in schema
+    assert 'lookup_order' in schema
+    assert 'cache_size' in schema
+    assert 'cache_ttl' in schema
+    assert 'timeout' in schema
+
+
+def test_setup():
+    registry = mock.Mock()
+    Extension().setup(registry)
+    registry.add.assert_called_once_with('backend', backend.PodcastBackend)
+
+
+@pytest.mark.parametrize('url,handler,method,proxy_config', [
+    ('file://example.com/feed.xml', urllib2.FileHandler, 'file_open', {}),
+    ('http://example.com/feed.xml', urllib2.HTTPHandler, 'http_open', {}),
+    ('https://example.com/feed.xml', urllib2.HTTPSHandler, 'https_open', {}),
+    ('http://example.com/feed.xml', urllib2.HTTPHandler, 'http_open',
+     {'scheme': 'http', 'hostname': 'localhost', 'port': 9999}),
+    ('http://example.com/feed.xml', urllib2.HTTPSHandler, 'https_open',
+     {'scheme': 'https', 'hostname': 'localhost', 'port': 9999})
+])
+def test_get_url_opener(url, handler, method, proxy_config):
+    opener = Extension.get_url_opener({'proxy': proxy_config})
+    with mock.patch.object(handler, method) as mock_open:
+        try:
+            opener.open(url)
+        except Exception:
+            pass
+    assert mock_open.mock_calls
+    (req,), _ = mock_open.call_args
+    if req.header_items():
+        user_agent = '%s/%s' % (Extension.dist_name, Extension.version)
+        assert user_agent in req.get_header('User-agent')
+    if proxy_config:
+        assert req.get_type() == proxy_config['scheme']
+        assert req.get_host() == '{hostname}:{port}'.format(**proxy_config)
+        assert req.get_selector() == url
+    assert url == req.get_full_url()

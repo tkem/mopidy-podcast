@@ -1,9 +1,11 @@
-include .coveragerc
-include .travis.yml
 include CHANGES.rst
 include LICENSE
 include MANIFEST.in
 include README.rst
 include mopidy_podcast/ext.conf
+include tox.ini
 
-recursive-include tests *.py
+recursive-include tests *.py *.xml
+
+recursive-include docs *
+prune docs/_build

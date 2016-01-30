@@ -1,16 +1,20 @@
 Mopidy-Podcast
 ========================================================================
 
-Mopidy-Podcast is a Mopidy_ extension for searching and browsing
-podcasts.
+Mopidy-Podcast is a Mopidy_ extension for playing podcasts.
 
 
 Installation
 ------------------------------------------------------------------------
 
-Mopidy-Podcast can be installed using pip_ by running::
+Debian/Ubuntu/Raspbian: Install the ``mopidy-podcast`` package from
+`apt.mopidy.com <http://apt.mopidy.com/>`_::
 
-    pip install Mopidy-Podcast
+  apt-get install mopidy-podcast
+
+Otherwise, install the package from PyPI_::
+
+  pip install Mopidy-Podcast
 
 
 Project Resources
@@ -45,15 +49,14 @@ Project Resources
 License
 ------------------------------------------------------------------------
 
-Copyright (c) 2014, 2015 Thomas Kemmer.
+Copyright (c) 2014-2016 Thomas Kemmer.
 
 Licensed under the `Apache License, Version 2.0`_.
 
 
 .. _Mopidy: http://www.mopidy.com/
 
-.. _pip: https://pip.pypa.io/en/latest/
-
+.. _PyPI: https://pypi.python.org/pypi/Mopidy-Podcast/
 .. _Documentation: http://mopidy-podcast.readthedocs.org/en/latest/
 .. _Issue Tracker: https://github.com/tkem/mopidy-podcast/issues/
 .. _Source Code: https://github.com/tkem/mopidy-podcast

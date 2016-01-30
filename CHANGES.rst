@@ -1,3 +1,22 @@
+2.0.0 UNRELEASED
+----------------
+
+- Add support for OPML subscription lists and directories.
+
+- Add configuration options for browse and lookup order.
+
+- Change URI scheme for podcast episodes to use URI-encoded GUID as
+  fragment identifier.
+
+- Drop ``feeds`` directory.
+
+- Drop directory API.
+
+- Drop search support.
+
+- Upgrade dependencies to Mopidy v1.1.1.
+
+
 1.1.2 2015-08-27
 ----------------
 
