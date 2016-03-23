@@ -70,6 +70,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             logger.error('Error retrieving %s: %s', uri, e)  # TODO: raise?
         else:
             return list(feed.items(self.__browse_order == 'desc'))
+        return []  # FIXME: hide errors from clients
 
     def get_images(self, uris):
         def key(uri):
@@ -98,6 +99,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             logger.error('Error retrieving %s: %s', uri, e)  # TODO: raise?
         else:
             return self.__lookup(feed, uri)
+        return []  # FIXME: hide errors from clients
 
     def refresh(self, uri=None):
         if uri:

@@ -81,9 +81,10 @@ class RssFeed(PodcastFeed):
 
     def items(self, newest_first=False):
         for item in (reversed(self.__items) if newest_first else self.__items):
-            guid = item.findtext('guid')
-            name = item.findtext('title')
-            yield models.Ref.track(uri=self.getitemuri(guid), name=name)
+            yield models.Ref.track(
+                uri=self.getitemuri(self.__guid(item)),
+                name=item.findtext('title')
+            )
 
     def tracks(self, newest_first=False):
         album = models.Album(
@@ -94,7 +95,7 @@ class RssFeed(PodcastFeed):
         )
         genre = self.__genre(self.__channel)
         items = enumerate(self.__items, start=1)
-        for index, item in (reversed(items) if newest_first else items):
+        for index, item in (reversed(list(items)) if newest_first else items):
             yield models.Track(
                 uri=self.getitemuri(self.__guid(item)),
                 name=item.findtext('title'),
@@ -108,17 +109,16 @@ class RssFeed(PodcastFeed):
             )
 
     def images(self):
-        channel_image = self.__image(self.__channel)
-        if channel_image:
-            yield self.uri, [channel_image] if channel_image else []
+        image = self.__image(self.__channel)
+        default = [image] if image else None
+        if default:
+            yield self.uri, default
         for item in self.__items:
             image = self.__image(item)
-            guid = item.findtext('guid')
-            uri = self.getitemuri(guid)
             if image:
-                yield uri, [image]
-            elif channel_image:
-                yield uri, [channel_image]
+                yield self.getitemuri(self.__guid(item)), [image]
+            elif default:
+                yield self.getitemuri(self.__guid(item)), default
             else:
                 pass
 
