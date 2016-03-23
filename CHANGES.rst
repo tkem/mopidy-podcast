@@ -1,12 +1,12 @@
-2.0.0 UNRELEASED
-----------------
+v2.0.0 (2016-03-23)
+-------------------
 
 - Add support for OPML subscription lists and directories.
 
 - Add configuration options for browse and lookup order.
 
-- Change URI scheme for podcast episodes to use URI-encoded GUID as
-  fragment identifier.
+- Change URI scheme for podcast episodes to use GUID as fragment
+  identifier.
 
 - Drop ``feeds`` directory.
 
@@ -17,22 +17,22 @@
 - Upgrade dependencies to Mopidy v1.1.1.
 
 
-1.1.2 2015-08-27
-----------------
+v1.1.2 (2015-08-27)
+-------------------
 
 - Pass ``episodes`` as ``list`` to ``Podcast.copy()``.
 
 
-1.1.1 2015-03-25
-----------------
+v1.1.1 (2015-03-25)
+-------------------
 
 - Prepare for Mopidy v1.0 exact search API.
 
 
-1.1.0 2014-11-22
-----------------
+v1.1.0 (2014-11-22)
+-------------------
 
-- Improve `podcast` URI scheme.
+- Improve ``podcast`` URI scheme.
 
 - Report podcasts as albums when browsing.
 
@@ -41,27 +41,27 @@
 - Update unit tests.
 
 
-1.0.0 2014-05-24
-----------------
+v1.0.0 (2014-05-24)
+-------------------
 
 - Move RSS parsing to ``FeedsDirectory``.
 
 - Support for additional podcast/episode properties.
 
-- Add `search_results` config value.
+- Add ``search_results`` config value.
 
-- Add `uri_schemes` property to ``PodcastDirectory``.
+- Add ``uri_schemes`` property to ``PodcastDirectory``.
 
-- Add `uri` property to ``Podcast`` and ``Episode``.
+- Add ``uri`` property to ``Podcast`` and ``Episode``.
 
-- Support for `<itunes:image>`.
+- Support for ``<itunes:image>``.
 
 - Convert ``Podcast.Image`` and ``Episode.Enclosure`` to Mopidy model
   types.
 
 
-0.4.0 2014-04-11
-----------------
+v0.4.0 (2014-04-11)
+-------------------
 
 - ``PodcastDirectory`` and models API changes.
 
@@ -70,14 +70,14 @@
 - Configuration cleanup.
 
 
-0.3.0 2014-03-14
-----------------
+v0.3.0 (2014-03-14)
+-------------------
 
 - Complete rewrite to integrate podcast directory extensions.
 
 
-0.2.0 2014-02-07
-----------------
+v0.2.0 (2014-02-07)
+-------------------
 
 - Improve handling of iTunes tags.
 
@@ -86,7 +86,7 @@
 - Support searching for podcasts and episodes.
 
 
-0.1.0 2014-02-01
-----------------
+v0.1.0 (2014-02-01)
+-------------------
 
 - Initial release.
