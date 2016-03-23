@@ -1,9 +1,16 @@
 Installation
 ========================================================================
 
-Mopidy-Podcast can be installed using pip_ by running::
+On Debian Linux and Debian-based distributions like Ubuntu or
+Raspbian, install the ``mopidy-podcast`` package from
+apt.mopidy.com_::
 
-    pip install Mopidy-Podcast
+  apt-get install mopidy-podcast
+
+Otherwise, install the Python package from PyPI_::
+
+  pip install Mopidy-Podcast
 
 
-.. _pip: https://pip.pypa.io/en/latest/
+.. _PyPI: https://pypi.python.org/pypi/Mopidy-Podcast/
+.. _apt.mopidy.com: http://apt.mopidy.com/

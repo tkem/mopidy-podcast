@@ -1,43 +1,54 @@
 Mopidy-Podcast
 ========================================================================
 
-Mopidy-Podcast is a Mopidy_ extension for searching and browsing
+Mopidy-Podcast is a Mopidy_ extension for browsing and playing
 podcasts.
 
-Mopidy-Podcast extends Mopidy's browsing and searching capabilities to
-the podcasting domain by integrating podcasts and their episodes with
-Mopidy's native `data model`_.  More specifically, podcasts are mapped
-to *albums*, while individual podcast episodes are shown as *tracks*
-in Mopidy.  Podcast and episode metadata is retained and converted to
-Mopidy's native types where applicable.  An episode's audio stream is
-then played using Mopidy's streaming_ extension.
+This extension lets you browse podcasts distributed as RSS feeds and
+play individual episodes in a variety of audio formats.  Podcasts are
+mapped to albums, while podcast episodes are shown as tracks in
+Mopidy, with metadata converted to Mopidy’s native data model where
+applicable.  OPML 2.0 subscription lists and directories are also
+supported for multi-level browsing.
 
-To use Mopidy-Podcast, you first have to configure how to find and
-access podcasts:
+To use this extension, you first need a way to access podcasts from
+Mopidy:
 
-- If you already have some favorite podcasts published as RSS feeds,
-  you can subscribe to them by adding their feed URLs to
-  :confval:`podcast/feeds`.  RSS feeds will get updated on a regular
-  basis, so you can always browse and search for the latest episodes.
+- If you are already using a podcasting client, chances are that it
+  supports exporting your subscribed feeds as an OPML file.  Simply
+  store this file in the location pointed to by
+  :confval:`podcast/browse_root` to access your favorite podcasts from
+  Mopidy.
 
-- You can also install one of several -- well, actually two, at the
-  time -- :ref:`extensions`, which let you access external podcast
-  directory services such as the `Apple iTunes Store`_.
+- Since OPML is a simple XML format, it is also feasible to create
+  your own, using an XML or text editor of your choice. OPML also
+  supports linking to other OPML files, both locally and on the Web,
+  so this even allows creating your own *meta directory* pointing to
+  podcast collections from the `BBC
+  <http://www.bbc.co.uk/podcasts.opml>`_, `gpodder.net
+  <http://gpodder.net/search.opml?q=Python>`_, and other sources.
 
-Note that both methods can be combined, i.e. you can configure a list
-of your favorite RSS feeds for regular -- and potentially faster --
-access, while also installing one or more extensions for exploring.
+- If your client supports entering Mopidy URIs for playback and
+  browsing directly, just prefix the feed URL with ``podcast+`` to
+  make sure it is not treated as an audio stream::
+
+    mpc add "podcast+http://www.npr.org/rss/podcast.php?id=510298"
+
+- Last but not least, you can install `Mopidy-Podcast-iTunes`_, a
+  companion extension to Mopidy-Podcast, to browse and search podcasts
+  on the `Apple iTunes Store
+  <https://itunes.apple.com/genre/podcasts/id26>`_.
+
 
 .. toctree::
-   :maxdepth: 2
+   :hidden:
 
    install
    config
-   extensions
-   api/index
+   changelog
    license
 
+
 .. _Mopidy: http://www.mopidy.com/
-.. _data model: http://docs.mopidy.com/en/latest/api/models/
-.. _streaming: http://docs.mopidy.com/en/latest/ext/stream/
-.. _Apple iTunes Store: https://itunes.apple.com/genre/podcasts/id26
+.. _OPML 2.0 specification: http://dev.opml.org/spec2.html
+.. _Mopidy-Podcast-iTunes: https://github.com/tkem/mopidy-podcast-itunes/

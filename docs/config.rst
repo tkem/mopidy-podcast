@@ -1,81 +1,63 @@
 Configuration
 ========================================================================
 
-This section describes the configuration values that affect
-Mopidy-Podcast's core functions and the bundled :ref:`feeds <feeds>`
-directory provider.  For configuring external :ref:`extensions
-<extensions>`, please refer to their respective documentation.
+This extension provides a number of configuration values that can be
+tweaked.  However, the :ref:`default configuration <defconf>` should
+contain everything to get you up and running, and will usually require
+only a few modifications, if any, to match personal preferences.
 
 
-General Configuration Values
+.. _confvals:
+
+Configuration Values
 ------------------------------------------------------------------------
 
-.. confval:: podcast/browse_limit
+.. confval:: podcast/browse_root
 
-   The maximum number of browse results and podcast episodes to show.
+   A local path or URL pointing to an OPML syndication feed to use as
+   the root for browsing the *Podcasts* directory in Mopidy.  Relative
+   paths refer to files in the extension's configuration directory
+   [#footnote1]_.
 
-.. confval:: podcast/search_limit
+   For example, this will point the *Podcasts* directory to a
+   collection of all the BBC Radio and Music feeds::
 
-   The maximum number of search results to show.
+      browse_root = http://www.bbc.co.uk/podcasts.opml
 
-.. confval:: podcast/search_details
+   The default value is ``Podcasts.opml``, so simply exporting your
+   subscribed feeds from your favorite podcast client under this name
+   and dropping the file in Mopidy-Podcast's configuration directory
+   is usually all you need to do.
 
-   Whether to return fully detailed search results.  If set to ``off``
-   (the default), only a podcast's or episode's name and URI will
-   appear in search results, similar to what is shown when browsing.
-   If set to ``on``, search results will also include meta information
-   such as author name, track counts and lengths, publication dates
-   and images, if available.  However, this will slow down searching
-   tremendously, so if you enable this you might consider decreasing
-   :confval:`podcast/search_limit`.
+   If set to an empty string, the *Podcasts* directory will be hidden
+   when browsing Mopidy.
 
-.. confval:: podcast/update_interval
+.. confval:: podcast/browse_order
 
-   The directory update interval in seconds, i.e. how often locally
-   stored information should be refreshed.
+   Whether to sort podcast episodes by ascending (``asc``) or
+   descending (``desc``) publication date for browsing.
+
+.. confval:: podcast/lookup_order
+
+   Whether to sort podcast episodes by ascending (``asc``) or
+   descending (``desc``) publication date for lookup, for example when
+   adding a podcast to Mopidy's tracklist.
+
+.. confval:: podcast/cache_size
+
+   The maximum number of podcast feeds that will be cached in memory.
+
+.. confval:: podcast/cache_ttl
+
+   The cache's *time to live*, i.e. the number of seconds after which
+   a cached feed expires and needs to be reloaded.
+
+.. confval:: podcast/timeout
+
+   The HTTP request timeout when retrieving podcast feeds, in seconds.
 
 
-.. _feeds:
-
-Feeds Directory Configuration Values
-------------------------------------------------------------------------
-
-This section lists configuration values specific to the *feeds*
-podcast directory provider that is bundled with Mopidy-Podcast.  If
-you do not plan to use the *feeds* directory, these can be safely
-ignored.
-
-.. confval:: podcast/feeds
-
-   A list of podcast RSS feed URLs to subscribe to.  Individual URLs
-   must be seperated by either newlines or commas, with newlines
-   preferred.
-
-   To subscribe to some podcasts from NPR_'s highly recommended `All
-   Songs Considered`_ program::
-
-     feeds =
-         http://www.npr.org/rss/podcast.php?id=510019
-         http://www.npr.org/rss/podcast.php?id=510253
-         http://www.npr.org/rss/podcast.php?id=510306
-
-.. confval:: podcast/feeds_root_name
-
-   The directory name shown for browsing subscribed feeds.
-
-.. confval:: podcast/feeds_cache_size
-
-   The maximum number of podcast RSS feeds that should be cached.
-
-.. confval:: podcast/feeds_cache_ttl
-
-   The feeds cache *time to live*, i.e. the number of seconds after
-   which a cached feed expires and needs to be reloaded.
-
-.. confval:: podcast/feeds_timeout
-
-   The HTTP request timeout when retrieving RSS feeds, in seconds.
-
+.. _defconf:
 
 Default Configuration
 ------------------------------------------------------------------------
@@ -87,5 +69,13 @@ Mopidy-Podcast release |release|:
    :language: ini
 
 
-.. _NPR: http://www.npr.org/
-.. _All Songs Considered: http://www.npr.org/blogs/allsongs/
+.. rubric:: Footnotes
+
+.. [#footnote1] When running Mopidy as a regular user, this will
+   usually be ``~/.config/mopidy/podcast``.  When running as a system
+   service, this should be ``/etc/mopidy/podcast``.  Note that it may
+   be necessary to create these directories manually when installing
+   the Python package from PyPi_, depending on local file permissions.
+
+
+.. _PyPI: https://pypi.python.org/pypi/Mopidy-Podcast/

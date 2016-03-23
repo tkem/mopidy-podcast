@@ -1,20 +1,39 @@
 Mopidy-Podcast
 ========================================================================
 
-Mopidy-Podcast is a Mopidy_ extension for playing podcasts.
+Mopidy-Podcast is a Mopidy_ extension for browsing and playing
+podcasts.
+
+This extension lets you browse podcasts distributed as RSS feeds and
+play individual episodes in a variety of audio formats.  Podcasts are
+mapped to albums, while podcast episodes are shown as tracks in
+Mopidy, with metadata converted to Mopidy’s native data model where
+applicable.  OPML 2.0 subscription lists and directories are also
+supported for multi-level browsing.
+
+For more information, please see Mopidy-Podcast's online
+documentation_.
 
 
 Installation
 ------------------------------------------------------------------------
 
-Debian/Ubuntu/Raspbian: Install the ``mopidy-podcast`` package from
-`apt.mopidy.com <http://apt.mopidy.com/>`_::
+On Debian Linux and Debian-based distributions like Ubuntu or
+Raspbian, install the ``mopidy-podcast`` package from
+apt.mopidy.com_::
 
   apt-get install mopidy-podcast
 
-Otherwise, install the package from PyPI_::
+Otherwise, install the Python package from PyPI_::
 
   pip install Mopidy-Podcast
+
+
+Configuration
+------------------------------------------------------------------------
+
+Please refer to the documentation's `Configuration`_ section for a
+discussion of the available configuration values.
 
 
 Project Resources
@@ -37,10 +56,9 @@ Project Resources
    :alt: Test coverage
 
 .. image:: https://readthedocs.org/projects/mopidy-podcast/badge/?version=latest&style=flat
-   :target: https://readthedocs.org/projects/mopidy-podcast/?badge=latest
+   :target: http://mopidy-podcast.readthedocs.org/en/latest/
    :alt: Documentation Status
 
-- `Documentation`_
 - `Issue Tracker`_
 - `Source Code`_
 - `Change Log`_
@@ -55,9 +73,11 @@ Licensed under the `Apache License, Version 2.0`_.
 
 
 .. _Mopidy: http://www.mopidy.com/
+.. _apt.mopidy.com: http://apt.mopidy.com/
 
 .. _PyPI: https://pypi.python.org/pypi/Mopidy-Podcast/
 .. _Documentation: http://mopidy-podcast.readthedocs.org/en/latest/
+.. _Configuration: http://mopidy-podcast.readthedocs.org/en/latest/config.html
 .. _Issue Tracker: https://github.com/tkem/mopidy-podcast/issues/
 .. _Source Code: https://github.com/tkem/mopidy-podcast
 .. _Change Log: https://github.com/tkem/mopidy-podcast/blob/master/CHANGES.rst

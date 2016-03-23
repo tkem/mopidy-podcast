@@ -8,8 +8,8 @@ def setup(app):
 
 def get_version(filename):
     from re import findall
-    with open(filename) as fh:
-        metadata = dict(findall(r"__([a-z]+)__ = '([^']+)'", fh.read()))
+    with open(filename) as f:
+        metadata = dict(findall(r"__([a-z]+)__ = '([^']+)'", f.read()))
     return metadata['version']
 
 project = 'Mopidy-Podcast'
