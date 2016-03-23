@@ -9,7 +9,7 @@ from mopidy import backend, models
 
 import uritools
 
-from . import Extension, feeds
+from . import Extension
 
 logger = logging.getLogger(__name__)
 
@@ -45,23 +45,19 @@ class PodcastLibraryProvider(backend.LibraryProvider):
 
     @property
     def root_directory(self):
-        uriref = self.__browse_root
-        try:
-            if not uriref:
-                return None
-            elif uriref.startswith(('file:', 'http:', 'https:')):
-                uri = uritools.uridefrag('podcast+' + uriref).uri
-            elif os.path.isabs(uriref):
-                uri = self.__parse(uriref).uri
-            elif self.__config_dir:
-                uri = self.__parse(os.path.join(self.__config_dir, uriref)).uri
-            else:
-                return None
-            return models.Ref.directory(name='Podcasts', uri=uri)
-        except Exception as e:
-            logger.error('Cannot access %s browse root: %s',
-                         Extension.dist_name, e)
-        return None
+        root = self.__browse_root
+        if not root:
+            return None
+        elif root.startswith(('file:', 'http:', 'https:')):
+            uri = uritools.uridefrag('podcast+' + root).uri
+        elif os.path.isabs(root):
+            uri = uritools.uricompose('podcast+file', '', root)
+        elif self.__config_dir:
+            uri = uritools.uricompose('podcast+file', '',
+                                      os.path.join(self.__config_dir, root))
+        else:
+            return None
+        return models.Ref.directory(name='Podcasts', uri=uri)
 
     def browse(self, uri):
         try:
@@ -119,8 +115,3 @@ class PodcastLibraryProvider(backend.LibraryProvider):
                 logger.warning('No such track: %s', uri)  # TODO: raise?
             else:
                 return [track]
-
-    def __parse(self, path):
-        feed = feeds.parse(path)
-        self.backend.feeds[feed.uri] = feed
-        return feed

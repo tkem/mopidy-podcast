@@ -6,7 +6,9 @@ from mopidy_podcast import feeds
 
 
 def test_root_directory(library):
-    assert library.root_directory is None  # TODO
+    assert library.root_directory is not None
+    assert library.root_directory.name == 'Podcasts'
+    assert library.root_directory.uri.endswith('Podcasts.opml')
 
 
 @pytest.mark.parametrize('filename', ['directory.xml', 'rssfeed.xml'])
