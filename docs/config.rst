@@ -12,6 +12,10 @@ only a few modifications, if any, to match personal preferences.
 Configuration Values
 ------------------------------------------------------------------------
 
+.. confval:: podcast/enabled
+
+   Whether this extension should be enabled or not.
+
 .. confval:: podcast/browse_root
 
    A local path or URL pointing to an OPML syndication feed to use as
