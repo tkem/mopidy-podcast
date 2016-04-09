@@ -15,27 +15,6 @@ For more information, please see Mopidy-Podcast's online
 documentation_.
 
 
-Installation
-------------------------------------------------------------------------
-
-On Debian Linux and Debian-based distributions like Ubuntu or
-Raspbian, install the ``mopidy-podcast`` package from
-apt.mopidy.com_::
-
-  apt-get install mopidy-podcast
-
-Otherwise, install the Python package from PyPI_::
-
-  pip install Mopidy-Podcast
-
-
-Configuration
-------------------------------------------------------------------------
-
-Please refer to the documentation's `Configuration`_ section for a
-discussion of the available configuration values.
-
-
 Project Resources
 ------------------------------------------------------------------------
 
@@ -73,13 +52,10 @@ Licensed under the `Apache License, Version 2.0`_.
 
 
 .. _Mopidy: http://www.mopidy.com/
-.. _apt.mopidy.com: http://apt.mopidy.com/
 
-.. _PyPI: https://pypi.python.org/pypi/Mopidy-Podcast/
 .. _Documentation: http://mopidy-podcast.readthedocs.org/en/latest/
-.. _Configuration: http://mopidy-podcast.readthedocs.org/en/latest/config.html
 .. _Issue Tracker: https://github.com/tkem/mopidy-podcast/issues/
-.. _Source Code: https://github.com/tkem/mopidy-podcast
+.. _Source Code: https://github.com/tkem/mopidy-podcast/
 .. _Change Log: https://github.com/tkem/mopidy-podcast/blob/master/CHANGES.rst
 
 .. _Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
