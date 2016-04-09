@@ -11,8 +11,8 @@ Mopidy, with metadata converted to Mopidy’s native data model where
 applicable.  OPML 2.0 subscription lists and directories are also
 supported for multi-level browsing.
 
-For more information, please see Mopidy-Podcast's online
-documentation_.
+For more information and installation instructions, please see
+Mopidy-Podcast's online documentation_.
 
 
 Project Resources
