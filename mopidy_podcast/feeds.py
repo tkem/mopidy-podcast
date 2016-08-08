@@ -140,7 +140,9 @@ class RssFeed(PodcastFeed):
         except TypeError:
             return None
         else:
-            return datetime.date.fromtimestamp(timestamp).isoformat()
+            return datetime.datetime.utcfromtimestamp(
+                timestamp,
+            ).date().isoformat()
 
     @classmethod
     def __genre(cls, etree):
