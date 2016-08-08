@@ -1,7 +1,8 @@
 License
 ========================================================================
 
-Mopidy-Podcast is Copyright (c) 2014-2016 Thomas Kemmer.
+Mopidy-Podcast is Copyright (c) 2014-2016 Thomas Kemmer and
+contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you
 may not use this software except in compliance with the License.  You
