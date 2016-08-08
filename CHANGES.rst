@@ -1,3 +1,13 @@
+v2.0.1 (UNRELEASED)
+-------------------
+
+- Add OPML example to docs.
+
+- Remove PyPI downloads badge from README.
+
+- Correct tests under extreme timezones (thanks to Chris Lamb).
+
+
 v2.0.0 (2016-03-23)
 -------------------
 
