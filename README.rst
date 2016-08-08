@@ -46,7 +46,7 @@ Project Resources
 License
 ------------------------------------------------------------------------
 
-Copyright (c) 2014-2016 Thomas Kemmer.
+Copyright (c) 2014-2016 Thomas Kemmer and contributors_.
 
 Licensed under the `Apache License, Version 2.0`_.
 
@@ -57,5 +57,6 @@ Licensed under the `Apache License, Version 2.0`_.
 .. _Issue Tracker: https://github.com/tkem/mopidy-podcast/issues/
 .. _Source Code: https://github.com/tkem/mopidy-podcast/
 .. _Change Log: https://github.com/tkem/mopidy-podcast/blob/master/CHANGES.rst
+.. _contributors: https://github.com/tkem/mopidy-podcast/blob/master/AUTHORS
 
 .. _Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
