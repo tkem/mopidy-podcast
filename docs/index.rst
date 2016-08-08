@@ -26,7 +26,16 @@ Mopidy:
   so this even allows creating your own *meta directory* pointing to
   podcast collections from the `BBC
   <http://www.bbc.co.uk/podcasts.opml>`_, `gpodder.net
-  <http://gpodder.net/search.opml?q=Python>`_, and other sources.
+  <http://gpodder.net/search.opml?q=Python>`_, and other sources::
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <opml>
+      <body>
+        <outline text="TED Radio Hour" type="rss" xmlUrl="http://www.npr.org/rss/podcast.php?id=510298" />
+        <outline text="BBC Radio Podcasts" type="include" url="http://www.bbc.co.uk/podcasts.opml" />
+        <outline text="gpodder.net - Python" type="include" url="http://gpodder.net/search.opml?q=Python" />
+      </body>
+    </opml>
 
 - If your client supports entering Mopidy URIs for playback and
   browsing directly, just prefix the feed URL with ``podcast+`` to
