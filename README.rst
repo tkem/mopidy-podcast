@@ -31,7 +31,7 @@ Project Resources
    :alt: Test coverage
 
 .. image:: https://readthedocs.org/projects/mopidy-podcast/badge/?version=latest&style=flat
-   :target: http://mopidy-podcast.readthedocs.org/en/latest/
+   :target: http://mopidy-podcast.readthedocs.io/en/latest/
    :alt: Documentation Status
 
 - `Issue Tracker`_
@@ -49,7 +49,7 @@ Licensed under the `Apache License, Version 2.0`_.
 
 .. _Mopidy: http://www.mopidy.com/
 
-.. _Documentation: http://mopidy-podcast.readthedocs.org/en/latest/
+.. _Documentation: http://mopidy-podcast.readthedocs.io/en/latest/
 .. _Issue Tracker: https://github.com/tkem/mopidy-podcast/issues/
 .. _Source Code: https://github.com/tkem/mopidy-podcast/
 .. _Change Log: https://github.com/tkem/mopidy-podcast/blob/master/CHANGES.rst
