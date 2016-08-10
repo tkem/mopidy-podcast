@@ -1,4 +1,4 @@
-v2.0.1 (UNRELEASED)
+v2.0.1 (2016-08-10)
 -------------------
 
 - Add OPML example to docs.
