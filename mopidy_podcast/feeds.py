@@ -30,6 +30,24 @@ def parse(source):
         raise TypeError('Not a recognized podcast feed: %s', url)
 
 
+def get_attrib(element, attrib, default=None):
+    """
+    Case-insensitive get for xml.etree.ElementTree.Element objects.
+
+    The OPML spec is ambiguous on the subject of case-sensitivity so we can't
+    assume keys will be lowercase.
+    """
+    return element.get(
+            attrib,
+            element.get(
+                attrib.upper(),
+                element.get(
+                    attrib.lower(), default
+                )
+            )
+        )
+
+
 class PodcastFeed(object):
 
     def __init__(self, url):
@@ -76,7 +94,7 @@ class RssFeed(PodcastFeed):
     def getstreamuri(self, guid):
         for item in self.__items:
             if self.__guid(item) == guid:
-                return item.find('enclosure').get('url')
+                return get_attrib(item.find('enclosure'), 'url')
         return None
 
     def items(self, newest_first=False):
@@ -148,19 +166,20 @@ class RssFeed(PodcastFeed):
     def __genre(cls, etree):
         elem = etree.find(cls.ITUNES_PREFIX + 'category')
         if elem is not None:
-            return elem.get('text')
+            return get_attrib(elem, 'text')
         else:
             return None
 
     @classmethod
     def __guid(cls, etree):
-        return etree.findtext('guid') or etree.find('enclosure').get('url')
+        return (etree.findtext('guid') or
+                get_attrib(etree.find('enclosure'), 'url'))
 
     @classmethod
     def __image(cls, etree):
         elem = etree.find(cls.ITUNES_PREFIX + 'image')
         if elem is not None:
-            return models.Image(uri=elem.get('href'))
+            return models.Image(uri=get_attrib(elem, 'href'))
         else:
             return None
 
@@ -194,21 +213,21 @@ class OpmlFeed(PodcastFeed):  # not really a "feed"
 
     TYPES = {
         'include': lambda e: models.Ref.directory(
-            name=e.get('text'),
-            uri=PodcastFeed.getfeeduri(e.get('url'))
+            name=get_attrib(e, 'text'),
+            uri=PodcastFeed.getfeeduri(get_attrib(e, 'url'))
         ),
         'link': lambda e: models.Ref(
             type=(
                 models.Ref.DIRECTORY
-                if e.get('url').endswith('.opml')
+                if get_attrib(e, 'url').endswith('.opml')
                 else models.Ref.ALBUM
             ),
-            name=e.get('text'),
-            uri=PodcastFeed.getfeeduri(e.get('url'))
+            name=get_attrib(e, 'text'),
+            uri=PodcastFeed.getfeeduri(get_attrib(e, 'url'))
         ),
         'rss': lambda e: models.Ref.album(
-            name=e.get('title', e.get('text')),
-            uri=PodcastFeed.getfeeduri(e.get('xmlUrl'))
+            name=get_attrib(e, 'title', default=get_attrib(e, 'text')),
+            uri=PodcastFeed.getfeeduri(get_attrib(e, 'xmlUrl'))
         )
     }
 
@@ -219,7 +238,7 @@ class OpmlFeed(PodcastFeed):  # not really a "feed"
     def items(self, newest_first=None):
         for e in self.__outlines:
             try:
-                ref = self.TYPES[e.get('type').lower()]
+                ref = self.TYPES[get_attrib(e, 'type').lower()]
             except KeyError:
                 pass
             else:
