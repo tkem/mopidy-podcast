@@ -30,6 +30,15 @@ def parse(source):
         raise TypeError('Not a recognized podcast feed: %s', url)
 
 
+def get_url(source, default=None):
+    """
+    Get URL from xml.etree.ElementTree.Element.
+
+    URL is often capitalized in OPML feeds.
+    """
+    return source.get('url', source.get('URL', default))
+
+
 class PodcastFeed(object):
 
     def __init__(self, url):
@@ -76,7 +85,7 @@ class RssFeed(PodcastFeed):
     def getstreamuri(self, guid):
         for item in self.__items:
             if self.__guid(item) == guid:
-                return item.find('enclosure').get('url')
+                return get_url(item.find('enclosure'))
         return None
 
     def items(self, newest_first=False):
@@ -154,7 +163,7 @@ class RssFeed(PodcastFeed):
 
     @classmethod
     def __guid(cls, etree):
-        return etree.findtext('guid') or etree.find('enclosure').get('url')
+        return etree.findtext('guid') or get_url(etree.find('enclosure'))
 
     @classmethod
     def __image(cls, etree):
@@ -195,16 +204,16 @@ class OpmlFeed(PodcastFeed):  # not really a "feed"
     TYPES = {
         'include': lambda e: models.Ref.directory(
             name=e.get('text'),
-            uri=PodcastFeed.getfeeduri(e.get('url'))
+            uri=PodcastFeed.getfeeduri(get_url(e))
         ),
         'link': lambda e: models.Ref(
             type=(
                 models.Ref.DIRECTORY
-                if e.get('url').endswith('.opml')
+                if get_url(e).endswith('.opml')
                 else models.Ref.ALBUM
             ),
             name=e.get('text'),
-            uri=PodcastFeed.getfeeduri(e.get('url'))
+            uri=PodcastFeed.getfeeduri(get_url(e))
         ),
         'rss': lambda e: models.Ref.album(
             name=e.get('title', e.get('text')),
