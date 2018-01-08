@@ -16,7 +16,6 @@ def test_browse(config, library, filename, abspath):
     feed = feeds.parse(abspath(filename))
     newest_first = config['podcast']['browse_order'] == 'desc'
     assert library.browse(feed.uri) == list(feed.items(newest_first))
-    assert feed.uri in library.backend.feeds
 
 
 @pytest.mark.parametrize('uri,expected', [
@@ -38,7 +37,6 @@ def test_get_images(library, filename, abspath):
         assert library.get_images([uri]) == {uri: images}
     images = {uri: images for uri, images in feed.images()}
     assert library.get_images(list(images)) == images
-    assert feed.uri in library.backend.feeds
 
 
 @pytest.mark.parametrize('uris,expected', [
@@ -60,7 +58,6 @@ def test_lookup(config, library, filename, abspath):
         assert library.lookup(track.uri) == [track]
     newest_first = config['podcast']['lookup_order'] == 'desc'
     assert library.lookup(feed.uri) == list(feed.tracks(newest_first))
-    assert feed.uri in library.backend.feeds
 
 
 @pytest.mark.parametrize('uri,expected', [
@@ -79,10 +76,12 @@ def test_lookup_error(library, uri, expected):
 def test_refresh(library, filename, abspath):
     feed = feeds.parse(abspath(filename))
     tracks = library.lookup(feed.uri)
+    assert feed.uri not in library.backend.feeds  # local feeds not cached!
+    library.backend.feeds[feed.uri] = feed
     assert feed.uri in library.backend.feeds
     library.refresh(tracks[0].uri)
     assert feed.uri not in library.backend.feeds
-    library.lookup(tracks[0].uri)
-    assert feed.uri in library.backend.feeds
+    library.backend.feeds[feed.uri] = feed
+    assert library.backend.feeds
     library.refresh()
     assert not library.backend.feeds

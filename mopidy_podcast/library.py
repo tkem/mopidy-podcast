@@ -50,14 +50,17 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             return None
         elif root.startswith(('file:', 'http:', 'https:')):
             uri = uritools.uridefrag('podcast+' + root).uri
+            return models.Ref.directory(name='Podcasts', uri=uri)
         elif os.path.isabs(root):
             uri = uritools.uricompose('podcast+file', '', root)
+            return models.Ref.directory(name='Podcasts', uri=uri)
         elif self.__config_dir:
-            uri = uritools.uricompose('podcast+file', '',
-                                      os.path.join(self.__config_dir, root))
+            path = os.path.join(self.__config_dir, root)
+            uri = uritools.uricompose('podcast+file', '', path)
+            return models.Ref.directory(name='Podcasts', uri=uri)
         else:
+            logger.error('Cannot retrieve Podcast root directory')
             return None
-        return models.Ref.directory(name='Podcasts', uri=uri)
 
     def browse(self, uri):
         try:
