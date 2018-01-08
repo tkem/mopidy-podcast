@@ -12,6 +12,7 @@ def get_version(filename):
         metadata = dict(findall(r"__([a-z]+)__ = '([^']+)'", f.read()))
     return metadata['version']
 
+
 project = 'Mopidy-Podcast'
 copyright = '2014-2016 Thomas Kemmer'
 version = get_version(b'../mopidy_podcast/__init__.py')
