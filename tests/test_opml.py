@@ -27,6 +27,9 @@ XML = b"""<?xml version="1.0" encoding="UTF-8"?>
              url="http://example.com/directory2.opml"/>
     <outline text="Podcast" type="link"
              url="http://example.com/podcast4.xml"/>
+    <!-- some OPML generators use uppercase "URL" attribute -->
+    <outline text="PODCAST" type="link"
+             URL="http://example.com/podcast5.xml"/>
     <outline text="Foo" type="bar"/>
     <outline text="Foo"/>
   </body>
@@ -64,6 +67,9 @@ def test_items(opml):
         ),
         models.Ref.album(
             uri='podcast+http://example.com/podcast4.xml', name='Podcast'
+        ),
+        models.Ref.album(
+            uri='podcast+http://example.com/podcast5.xml', name='PODCAST'
         )
     ]
 
