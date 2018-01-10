@@ -1,3 +1,11 @@
+v2.0.2 (2018-01-10)
+-------------------
+
+- Skip cache for local feeds.
+
+- Accept uppercase ``URL`` attributes in OPML feeds.
+
+
 v2.0.1 (2016-08-10)
 -------------------
 
