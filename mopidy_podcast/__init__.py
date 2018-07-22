@@ -4,7 +4,7 @@ import os
 
 from mopidy import config, ext, httpclient
 
-__version__ = '2.0.2'
+__version__ = '2.0.3'
 
 
 class Extension(ext.Extension):
