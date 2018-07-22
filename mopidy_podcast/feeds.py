@@ -134,7 +134,7 @@ class RssFeed(PodcastFeed):
     @classmethod
     def __artists(cls, etree):
         elem = etree.find(cls.ITUNES_PREFIX + 'author')
-        if elem is not None:
+        if elem is not None and elem.text:
             return [models.Artist(name=elem.text)]
         else:
             return None
