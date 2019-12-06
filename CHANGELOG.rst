@@ -1,3 +1,15 @@
+v3.0.0a1 (2019-12-06)
+=====================
+
+- Require Python >= 3.7.
+
+- Require Mopidy >= 3.0.0a5.
+
+- Require Pykka >= 2.0.1.
+
+- Update project setup.
+
+
 v2.0.3 (2018-07-23)
 ===================
 
