@@ -2,10 +2,8 @@ import functools
 import os
 
 import mock
-
-import pytest
-
 import mopidy_podcast as ext
+import pytest
 
 
 @pytest.fixture
@@ -21,18 +19,16 @@ def audio():
 @pytest.fixture
 def config():
     return {
-        'podcast': {
-            'browse_root': 'Podcasts.opml',
-            'browse_order': 'desc',
-            'lookup_order': 'asc',
-            'cache_size': 64,
-            'cache_ttl': 86400,
-            'timeout': 10
+        "podcast": {
+            "browse_root": "Podcasts.opml",
+            "browse_order": "desc",
+            "lookup_order": "asc",
+            "cache_size": 64,
+            "cache_ttl": 86400,
+            "timeout": 10,
         },
-        'core': {
-            'config_dir': os.path.dirname(__file__)
-        },
-        'proxy': {}
+        "core": {"config_dir": os.path.dirname(__file__)},
+        "proxy": {},
     }
 
 

@@ -2,9 +2,8 @@ import datetime
 import email.utils
 import re
 
-from mopidy import models
-
 import uritools
+from mopidy import models
 
 from . import Extension
 
@@ -16,16 +15,16 @@ except ImportError:
 
 def parse(source):
     if isinstance(source, basestring):
-        url = uritools.uricompose('file', '', source)
+        url = uritools.uricompose("file", "", source)
     else:
         url = source.geturl()
     root = ElementTree.parse(source).getroot()
-    if root.tag == 'rss':
+    if root.tag == "rss":
         return RssFeed(url, root)
-    elif root.tag == 'opml':
+    elif root.tag == "opml":
         return OpmlFeed(url, root)
     else:
-        raise TypeError('Not a recognized podcast feed: %s', url)
+        raise TypeError("Not a recognized podcast feed: %s", url)
 
 
 def get_url(source, default=None):
@@ -34,20 +33,19 @@ def get_url(source, default=None):
 
     URL is often capitalized in OPML feeds.
     """
-    return source.get('url', source.get('URL', default))
+    return source.get("url", source.get("URL", default))
 
 
 class PodcastFeed:
-
     def __init__(self, url):
         self.uri = self.getfeeduri(url)
 
     @classmethod
     def getfeeduri(cls, url):
-        return uritools.uridefrag(Extension.ext_name + '+' + url).uri
+        return uritools.uridefrag(Extension.ext_name + "+" + url).uri
 
-    def getitemuri(self, guid, safe=uritools.SUB_DELIMS+b':@/?'):
-        return self.uri + '#' + uritools.uriencode(guid, safe=safe)
+    def getitemuri(self, guid, safe=uritools.SUB_DELIMS + b":@/?"):
+        return self.uri + "#" + uritools.uriencode(guid, safe=safe)
 
     def getstreamuri(self, guid):
         raise NotImplemented
@@ -64,55 +62,58 @@ class PodcastFeed:
 
 class RssFeed(PodcastFeed):
 
-    ITUNES_PREFIX = '{http://www.itunes.com/dtds/podcast-1.0.dtd}'
+    ITUNES_PREFIX = "{http://www.itunes.com/dtds/podcast-1.0.dtd}"
 
-    DURATION_RE = re.compile(r"""
+    DURATION_RE = re.compile(
+        r"""
     (?:
       (?:(?P<hours>\d+):)?
       (?P<minutes>\d+):
     )?
     (?P<seconds>\d+)
-    """, flags=re.VERBOSE)
+    """,
+        flags=re.VERBOSE,
+    )
 
     def __init__(self, url, root):
         super().__init__(url)
-        self.__channel = channel = root.find('channel')
-        items = channel.findall('./item/enclosure[@url]/..')
+        self.__channel = channel = root.find("channel")
+        items = channel.findall("./item/enclosure[@url]/..")
         self.__items = list(sorted(items, key=self.__order))
 
     def getstreamuri(self, guid):
         for item in self.__items:
             if self.__guid(item) == guid:
-                return get_url(item.find('enclosure'))
+                return get_url(item.find("enclosure"))
         return None
 
     def items(self, newest_first=False):
-        for item in (reversed(self.__items) if newest_first else self.__items):
+        for item in reversed(self.__items) if newest_first else self.__items:
             yield models.Ref.track(
                 uri=self.getitemuri(self.__guid(item)),
-                name=item.findtext('title')
+                name=item.findtext("title"),
             )
 
     def tracks(self, newest_first=False):
         album = models.Album(
             uri=self.uri,
-            name=self.__channel.findtext('title'),
+            name=self.__channel.findtext("title"),
             artists=self.__artists(self.__channel),
-            num_tracks=len(self.__items)
+            num_tracks=len(self.__items),
         )
         genre = self.__genre(self.__channel)
         items = enumerate(self.__items, start=1)
-        for index, item in (reversed(list(items)) if newest_first else items):
+        for index, item in reversed(list(items)) if newest_first else items:
             yield models.Track(
                 uri=self.getitemuri(self.__guid(item)),
-                name=item.findtext('title'),
+                name=item.findtext("title"),
                 album=album,
                 artists=(self.__artists(item) or album.artists),
                 genre=genre,
                 date=self.__date(item),
                 length=self.__length(item),
-                comment=item.findtext('description'),
-                track_no=index
+                comment=item.findtext("description"),
+                track_no=index,
             )
 
     def images(self):
@@ -131,7 +132,7 @@ class RssFeed(PodcastFeed):
 
     @classmethod
     def __artists(cls, etree):
-        elem = etree.find(cls.ITUNES_PREFIX + 'author')
+        elem = etree.find(cls.ITUNES_PREFIX + "author")
         if elem is not None and elem.text:
             return [models.Artist(name=elem.text)]
         else:
@@ -139,7 +140,7 @@ class RssFeed(PodcastFeed):
 
     @classmethod
     def __date(cls, etree):
-        text = etree.findtext('pubDate')
+        text = etree.findtext("pubDate")
         try:
             timestamp = email.utils.mktime_tz(email.utils.parsedate_tz(text))
         except AttributeError:
@@ -147,35 +148,37 @@ class RssFeed(PodcastFeed):
         except TypeError:
             return None
         else:
-            return datetime.datetime.utcfromtimestamp(
-                timestamp,
-            ).date().isoformat()
+            return (
+                datetime.datetime.utcfromtimestamp(timestamp,)
+                .date()
+                .isoformat()
+            )
 
     @classmethod
     def __genre(cls, etree):
-        elem = etree.find(cls.ITUNES_PREFIX + 'category')
+        elem = etree.find(cls.ITUNES_PREFIX + "category")
         if elem is not None:
-            return elem.get('text')
+            return elem.get("text")
         else:
             return None
 
     @classmethod
     def __guid(cls, etree):
-        return etree.findtext('guid') or get_url(etree.find('enclosure'))
+        return etree.findtext("guid") or get_url(etree.find("enclosure"))
 
     @classmethod
     def __image(cls, etree):
-        elem = etree.find(cls.ITUNES_PREFIX + 'image')
+        elem = etree.find(cls.ITUNES_PREFIX + "image")
         if elem is not None:
-            return models.Image(uri=elem.get('href'))
+            return models.Image(uri=elem.get("href"))
         else:
             return None
 
     @classmethod
     def __length(cls, etree):
-        text = etree.findtext(cls.ITUNES_PREFIX + 'duration')
+        text = etree.findtext(cls.ITUNES_PREFIX + "duration")
         try:
-            groups = cls.DURATION_RE.match(text).groupdict('0')
+            groups = cls.DURATION_RE.match(text).groupdict("0")
         except AttributeError:
             return None
         except TypeError:
@@ -186,7 +189,7 @@ class RssFeed(PodcastFeed):
 
     @staticmethod
     def __order(etree):
-        text = etree.findtext('pubDate')
+        text = etree.findtext("pubDate")
         try:
             timestamp = email.utils.mktime_tz(email.utils.parsedate_tz(text))
         except AttributeError:
@@ -200,40 +203,39 @@ class RssFeed(PodcastFeed):
 class OpmlFeed(PodcastFeed):  # not really a "feed"
 
     TYPES = {
-        'include': lambda e: models.Ref.directory(
-            name=e.get('text'),
-            uri=PodcastFeed.getfeeduri(get_url(e))
+        "include": lambda e: models.Ref.directory(
+            name=e.get("text"), uri=PodcastFeed.getfeeduri(get_url(e))
         ),
-        'link': lambda e: models.Ref(
+        "link": lambda e: models.Ref(
             type=(
                 models.Ref.DIRECTORY
-                if get_url(e).endswith('.opml')
+                if get_url(e).endswith(".opml")
                 else models.Ref.ALBUM
             ),
-            name=e.get('text'),
-            uri=PodcastFeed.getfeeduri(get_url(e))
+            name=e.get("text"),
+            uri=PodcastFeed.getfeeduri(get_url(e)),
         ),
-        'rss': lambda e: models.Ref.album(
-            name=e.get('title', e.get('text')),
-            uri=PodcastFeed.getfeeduri(e.get('xmlUrl'))
-        )
+        "rss": lambda e: models.Ref.album(
+            name=e.get("title", e.get("text")),
+            uri=PodcastFeed.getfeeduri(e.get("xmlUrl")),
+        ),
     }
 
     def __init__(self, url, root):
         super().__init__(url)
-        self.__outlines = root.findall('./body//outline[@type]')
+        self.__outlines = root.findall("./body//outline[@type]")
 
     def items(self, newest_first=None):
         for e in self.__outlines:
             try:
-                ref = self.TYPES[e.get('type').lower()]
+                ref = self.TYPES[e.get("type").lower()]
             except KeyError:
                 pass
             else:
                 yield ref(e)
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     import argparse
     import contextlib
     import json
@@ -243,9 +245,9 @@ if __name__ == '__main__':  # pragma: no cover
     from mopidy.models import ModelJSONEncoder
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('url', metavar='URL')
-    parser.add_argument('-i', '--images', action='store_true')
-    parser.add_argument('-t', '--tracks', action='store_true')
+    parser.add_argument("url", metavar="URL")
+    parser.add_argument("-i", "--images", action="store_true")
+    parser.add_argument("-t", "--tracks", action="store_true")
     args = parser.parse_args()
 
     with contextlib.closing(urllib2.urlopen(args.url)) as source:
@@ -257,4 +259,4 @@ if __name__ == '__main__':  # pragma: no cover
     else:
         result = list(feed.items())
     json.dump(result, sys.stdout, cls=ModelJSONEncoder, indent=2)
-    sys.stdout.write('\n')
+    sys.stdout.write("\n")

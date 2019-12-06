@@ -3,9 +3,8 @@ import locale
 import logging
 import os
 
-from mopidy import backend, models
-
 import uritools
+from mopidy import backend, models
 
 from . import Extension
 
@@ -23,22 +22,25 @@ def get_config_dir(config):
     try:
         return Extension.get_config_dir(config)
     except OSError as e:
-        logger.warning('Cannot access %s config directory: %s',
-                       Extension.dist_name, strerror(e))
+        logger.warning(
+            "Cannot access %s config directory: %s",
+            Extension.dist_name,
+            strerror(e),
+        )
     except Exception as e:
-        logger.warning('Cannot access %s config directory: %s',
-                       Extension.dist_name, e)
+        logger.warning(
+            "Cannot access %s config directory: %s", Extension.dist_name, e
+        )
     return None
 
 
 class PodcastLibraryProvider(backend.LibraryProvider):
-
     def __init__(self, config, backend):
         super().__init__(backend)
         self.__config_dir = get_config_dir(config)
-        self.__browse_root = config[Extension.ext_name]['browse_root']
-        self.__browse_order = config[Extension.ext_name]['browse_order']
-        self.__lookup_order = config[Extension.ext_name]['lookup_order']
+        self.__browse_root = config[Extension.ext_name]["browse_root"]
+        self.__browse_order = config[Extension.ext_name]["browse_order"]
+        self.__lookup_order = config[Extension.ext_name]["lookup_order"]
         self.__tracks = {}  # cache tracks for faster lookup
 
     @property
@@ -46,38 +48,39 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         root = self.__browse_root
         if not root:
             return None
-        elif root.startswith(('file:', 'http:', 'https:')):
-            uri = uritools.uridefrag('podcast+' + root).uri
-            return models.Ref.directory(name='Podcasts', uri=uri)
+        elif root.startswith(("file:", "http:", "https:")):
+            uri = uritools.uridefrag("podcast+" + root).uri
+            return models.Ref.directory(name="Podcasts", uri=uri)
         elif os.path.isabs(root):
-            uri = uritools.uricompose('podcast+file', '', root)
-            return models.Ref.directory(name='Podcasts', uri=uri)
+            uri = uritools.uricompose("podcast+file", "", root)
+            return models.Ref.directory(name="Podcasts", uri=uri)
         elif self.__config_dir:
             path = os.path.join(self.__config_dir, root)
-            uri = uritools.uricompose('podcast+file', '', path)
-            return models.Ref.directory(name='Podcasts', uri=uri)
+            uri = uritools.uricompose("podcast+file", "", path)
+            return models.Ref.directory(name="Podcasts", uri=uri)
         else:
-            logger.error('Cannot retrieve Podcast root directory')
+            logger.error("Cannot retrieve Podcast root directory")
             return None
 
     def browse(self, uri):
         try:
             feed = self.backend.feeds[uri]
         except Exception as e:
-            logger.error('Error retrieving %s: %s', uri, e)  # TODO: raise?
+            logger.error("Error retrieving %s: %s", uri, e)  # TODO: raise?
         else:
-            return list(feed.items(self.__browse_order == 'desc'))
+            return list(feed.items(self.__browse_order == "desc"))
         return []  # FIXME: hide errors from clients
 
     def get_images(self, uris):
         def key(uri):
             return uritools.uridefrag(uri).uri
+
         result = {}
         for feeduri, uris in itertools.groupby(sorted(uris, key=key), key=key):
             try:
                 images = dict(self.backend.feeds[feeduri].images())
             except Exception as e:
-                logger.error('Error retrieving images for %s: %s', feeduri, e)
+                logger.error("Error retrieving images for %s: %s", feeduri, e)
             else:
                 result.update((uri, images.get(uri, [])) for uri in uris)
         return result
@@ -87,13 +90,13 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         try:
             track = self.__tracks.pop(uri)
         except KeyError:
-            logger.debug('Lookup cache miss: %s', uri)
+            logger.debug("Lookup cache miss: %s", uri)
         else:
             return [track]
         try:
             feed = self.backend.feeds[uritools.uridefrag(uri).uri]
         except Exception as e:
-            logger.error('Error retrieving %s: %s', uri, e)  # TODO: raise?
+            logger.error("Error retrieving %s: %s", uri, e)  # TODO: raise?
         else:
             return self.__lookup(feed, uri)
         return []  # FIXME: hide errors from clients
@@ -107,12 +110,12 @@ class PodcastLibraryProvider(backend.LibraryProvider):
 
     def __lookup(self, feed, uri):
         if uri == feed.uri:
-            return list(feed.tracks(self.__lookup_order == 'desc'))
+            return list(feed.tracks(self.__lookup_order == "desc"))
         else:
             self.__tracks = tracks = {t.uri: t for t in feed.tracks()}
             try:
                 track = tracks.pop(uri)
             except KeyError:
-                logger.warning('No such track: %s', uri)  # TODO: raise?
+                logger.warning("No such track: %s", uri)  # TODO: raise?
             else:
                 return [track]

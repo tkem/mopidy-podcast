@@ -1,25 +1,23 @@
 import pytest
-
 from mopidy_podcast import feeds
 
 
 def test_root_directory(library):
     assert library.root_directory is not None
-    assert library.root_directory.name == 'Podcasts'
-    assert library.root_directory.uri.endswith('Podcasts.opml')
+    assert library.root_directory.name == "Podcasts"
+    assert library.root_directory.uri.endswith("Podcasts.opml")
 
 
-@pytest.mark.parametrize('filename', ['directory.xml', 'rssfeed.xml'])
+@pytest.mark.parametrize("filename", ["directory.xml", "rssfeed.xml"])
 def test_browse(config, library, filename, abspath):
     feed = feeds.parse(abspath(filename))
-    newest_first = config['podcast']['browse_order'] == 'desc'
+    newest_first = config["podcast"]["browse_order"] == "desc"
     assert library.browse(feed.uri) == list(feed.items(newest_first))
 
 
-@pytest.mark.parametrize('uri,expected', [
-    (None, []),
-    ('podcast+file:///', []),
-])
+@pytest.mark.parametrize(
+    "uri,expected", [(None, []), ("podcast+file:///", []),]
+)
 def test_browse_error(library, uri, expected):
     if isinstance(expected, type):
         with pytest.raises(expected):
@@ -28,7 +26,7 @@ def test_browse_error(library, uri, expected):
         assert library.browse(uri) == expected
 
 
-@pytest.mark.parametrize('filename', ['rssfeed.xml'])
+@pytest.mark.parametrize("filename", ["rssfeed.xml"])
 def test_get_images(library, filename, abspath):
     feed = feeds.parse(abspath(filename))
     for uri, images in feed.images():
@@ -37,10 +35,9 @@ def test_get_images(library, filename, abspath):
     assert library.get_images(list(images)) == images
 
 
-@pytest.mark.parametrize('uris,expected', [
-    (None, TypeError),
-    ('podcast+file:///', {}),
-])
+@pytest.mark.parametrize(
+    "uris,expected", [(None, TypeError), ("podcast+file:///", {}),]
+)
 def test_get_images_error(library, uris, expected):
     if isinstance(expected, type):
         with pytest.raises(expected):
@@ -49,19 +46,16 @@ def test_get_images_error(library, uris, expected):
         assert library.get_images(uris) == expected
 
 
-@pytest.mark.parametrize('filename', ['rssfeed.xml'])
+@pytest.mark.parametrize("filename", ["rssfeed.xml"])
 def test_lookup(config, library, filename, abspath):
     feed = feeds.parse(abspath(filename))
     for track in feed.tracks():
         assert library.lookup(track.uri) == [track]
-    newest_first = config['podcast']['lookup_order'] == 'desc'
+    newest_first = config["podcast"]["lookup_order"] == "desc"
     assert library.lookup(feed.uri) == list(feed.tracks(newest_first))
 
 
-@pytest.mark.parametrize('uri,expected', [
-    (None, []),
-    ('podcast+file:///', [])
-])
+@pytest.mark.parametrize("uri,expected", [(None, []), ("podcast+file:///", [])])
 def test_lookup_error(library, uri, expected):
     if isinstance(expected, type):
         with pytest.raises(expected):
@@ -70,7 +64,7 @@ def test_lookup_error(library, uri, expected):
         assert library.lookup(uri) == expected
 
 
-@pytest.mark.parametrize('filename', ['rssfeed.xml'])
+@pytest.mark.parametrize("filename", ["rssfeed.xml"])
 def test_refresh(library, filename, abspath):
     feed = feeds.parse(abspath(filename))
     tracks = library.lookup(feed.uri)

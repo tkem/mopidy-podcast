@@ -1,7 +1,6 @@
 from mopidy import models
 
 import pytest
-
 from mopidy_podcast import feeds
 
 XML = b"""<?xml version="1.0" encoding="UTF-8"?>
@@ -52,7 +51,7 @@ def rss():
 
     class StringSource(StringIO):
         def geturl(self):
-            return 'http://www.example.com/everything.xml'
+            return "http://www.example.com/everything.xml"
 
     return feeds.parse(StringSource(XML))
 
@@ -60,10 +59,10 @@ def rss():
 @pytest.fixture
 def album():
     return models.Album(
-        uri='podcast+http://www.example.com/everything.xml',
-        name='All About Everything',
-        artists=[models.Artist(name='John Doe')],
-        num_tracks=3
+        uri="podcast+http://www.example.com/everything.xml",
+        name="All About Everything",
+        artists=[models.Artist(name="John Doe")],
+        num_tracks=3,
     )
 
 
@@ -71,35 +70,37 @@ def album():
 def tracks(album):
     return [
         models.Track(
-            uri='podcast+http://www.example.com/everything.xml#episode3',
-            name='Shake Shake Shake Your Spices',
-            artists=[models.Artist(name='John Doe')],
+            uri="podcast+http://www.example.com/everything.xml#episode3",
+            name="Shake Shake Shake Your Spices",
+            artists=[models.Artist(name="John Doe")],
             album=album,
-            genre='Technology',
-            date='2014-06-15',
+            genre="Technology",
+            date="2014-06-15",
             length=424000,
-            track_no=3
+            track_no=3,
         ),
         models.Track(
-            uri='podcast+http://www.example.com/everything.xml#episode2',
-            name='Socket Wrench Shootout',
-            artists=[models.Artist(name='Jane Doe')],
+            uri="podcast+http://www.example.com/everything.xml#episode2",
+            name="Socket Wrench Shootout",
+            artists=[models.Artist(name="Jane Doe")],
             album=album,
-            genre='Technology',
-            date='2014-06-08',
+            genre="Technology",
+            date="2014-06-08",
             length=274000,
-            track_no=2
+            track_no=2,
         ),
         models.Track(
-            uri=('podcast+http://www.example.com/everything.xml'
-                 '#http://example.com/everything/Episode1.mp3'),
-            name='Red, Whine, & Blue',
-            artists=[models.Artist(name='Various')],
+            uri=(
+                "podcast+http://www.example.com/everything.xml"
+                "#http://example.com/everything/Episode1.mp3"
+            ),
+            name="Red, Whine, & Blue",
+            artists=[models.Artist(name="Various")],
             album=album,
-            genre='Technology',
-            date='2014-06-01',
+            genre="Technology",
+            date="2014-06-01",
             length=239000,
-            track_no=1
+            track_no=1,
         ),
     ]
 
@@ -121,17 +122,17 @@ def test_tracks(rss, tracks):
 
 def test_images(rss):
     assert dict(rss.images()) == {
-        'podcast+http://www.example.com/everything.xml': [
-            models.Image(uri='http://example.com/everything/Podcast.jpg')
+        "podcast+http://www.example.com/everything.xml": [
+            models.Image(uri="http://example.com/everything/Podcast.jpg")
         ],
-        'podcast+http://www.example.com/everything.xml#episode3': [
-            models.Image(uri='http://example.com/everything/Episode3.jpg')
+        "podcast+http://www.example.com/everything.xml#episode3": [
+            models.Image(uri="http://example.com/everything/Episode3.jpg")
         ],
-        'podcast+http://www.example.com/everything.xml#episode2': [
-            models.Image(uri='http://example.com/everything/Episode2.jpg')
+        "podcast+http://www.example.com/everything.xml#episode2": [
+            models.Image(uri="http://example.com/everything/Episode2.jpg")
         ],
-        ('podcast+http://www.example.com/everything.xml'
-         '#http://example.com/everything/Episode1.mp3'): [
-            models.Image(uri='http://example.com/everything/Podcast.jpg')
-        ]
+        (
+            "podcast+http://www.example.com/everything.xml"
+            "#http://example.com/everything/Episode1.mp3"
+        ): [models.Image(uri="http://example.com/everything/Podcast.jpg")],
     }
