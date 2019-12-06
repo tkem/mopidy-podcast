@@ -1,4 +1,4 @@
-import os
+import pathlib
 
 from mopidy import config, ext, httpclient
 
@@ -12,7 +12,7 @@ class Extension(ext.Extension):
     version = __version__
 
     def get_default_config(self):
-        return config.read(os.path.join(os.path.dirname(__file__), "ext.conf"))
+        return config.read(pathlib.Path(__file__).parent / "ext.conf")
 
     def get_config_schema(self):
         schema = super().get_config_schema()
