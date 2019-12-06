@@ -15,9 +15,7 @@ def test_browse(config, library, filename, abspath):
     assert library.browse(feed.uri) == list(feed.items(newest_first))
 
 
-@pytest.mark.parametrize(
-    "uri,expected", [(None, []), ("podcast+file:///", []),]
-)
+@pytest.mark.parametrize("uri,expected", [(None, []), ("podcast+file:///", [])])
 def test_browse_error(library, uri, expected):
     if isinstance(expected, type):
         with pytest.raises(expected):
@@ -36,7 +34,7 @@ def test_get_images(library, filename, abspath):
 
 
 @pytest.mark.parametrize(
-    "uris,expected", [(None, TypeError), ("podcast+file:///", {}),]
+    "uris,expected", [(None, TypeError), ("podcast+file:///", {})]
 )
 def test_get_images_error(library, uris, expected):
     if isinstance(expected, type):

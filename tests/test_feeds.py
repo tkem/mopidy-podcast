@@ -6,7 +6,7 @@ from mopidy_podcast import feeds
 
 @pytest.mark.parametrize(
     "filename,expected",
-    [("directory.xml", feeds.OpmlFeed), ("rssfeed.xml", feeds.RssFeed),],
+    [("directory.xml", feeds.OpmlFeed), ("rssfeed.xml", feeds.RssFeed)],
 )
 def test_parse(abspath, filename, expected):
     path = abspath(filename)
