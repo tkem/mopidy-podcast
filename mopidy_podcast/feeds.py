@@ -48,10 +48,10 @@ class PodcastFeed:
         return self.uri + "#" + uritools.uriencode(guid, safe=safe)
 
     def getstreamuri(self, guid):
-        raise NotImplemented
+        raise NotImplementedError
 
     def items(self, newest_first=None):
-        raise NotImplemented
+        raise NotImplementedError
 
     def tracks(self, newest_first=None):
         return []
