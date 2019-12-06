@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import os
 
 from mopidy import config, ext, httpclient
@@ -17,7 +15,7 @@ class Extension(ext.Extension):
         return config.read(os.path.join(os.path.dirname(__file__), 'ext.conf'))
 
     def get_config_schema(self):
-        schema = super(Extension, self).get_config_schema()
+        schema = super().get_config_schema()
         schema['browse_root'] = config.String(optional=True)
         schema['browse_order'] = config.String(choices=['asc', 'desc'])
         schema['lookup_order'] = config.String(choices=['asc', 'desc'])
@@ -49,7 +47,7 @@ class Extension(ext.Extension):
         else:
             handlers = []
         opener = urllib2.build_opener(*handlers)
-        user_agent = '%s/%s' % (cls.dist_name, cls.version)
+        user_agent = f'{cls.dist_name}/{cls.version}'
         opener.addheaders = [
             ('User-agent', httpclient.format_user_agent(user_agent))
         ]

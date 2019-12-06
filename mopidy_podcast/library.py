@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import itertools
 import locale
 import logging
@@ -24,7 +22,7 @@ def strerror(error):
 def get_config_dir(config):
     try:
         return Extension.get_config_dir(config)
-    except EnvironmentError as e:
+    except OSError as e:
         logger.warning('Cannot access %s config directory: %s',
                        Extension.dist_name, strerror(e))
     except Exception as e:
@@ -36,7 +34,7 @@ def get_config_dir(config):
 class PodcastLibraryProvider(backend.LibraryProvider):
 
     def __init__(self, config, backend):
-        super(PodcastLibraryProvider, self).__init__(backend)
+        super().__init__(backend)
         self.__config_dir = get_config_dir(config)
         self.__browse_root = config[Extension.ext_name]['browse_root']
         self.__browse_order = config[Extension.ext_name]['browse_order']

@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import datetime
 import email.utils
 import re
@@ -39,7 +37,7 @@ def get_url(source, default=None):
     return source.get('url', source.get('URL', default))
 
 
-class PodcastFeed(object):
+class PodcastFeed:
 
     def __init__(self, url):
         self.uri = self.getfeeduri(url)
@@ -77,7 +75,7 @@ class RssFeed(PodcastFeed):
     """, flags=re.VERBOSE)
 
     def __init__(self, url, root):
-        super(RssFeed, self).__init__(url)
+        super().__init__(url)
         self.__channel = channel = root.find('channel')
         items = channel.findall('./item/enclosure[@url]/..')
         self.__items = list(sorted(items, key=self.__order))
@@ -222,7 +220,7 @@ class OpmlFeed(PodcastFeed):  # not really a "feed"
     }
 
     def __init__(self, url, root):
-        super(OpmlFeed, self).__init__(url)
+        super().__init__(url)
         self.__outlines = root.findall('./body//outline[@type]')
 
     def items(self, newest_first=None):

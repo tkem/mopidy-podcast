@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import urllib2
 
 import mock
@@ -50,7 +48,7 @@ def test_get_url_opener(url, handler, method, proxy_config):
     assert mock_open.mock_calls
     (req,), _ = mock_open.call_args
     if req.header_items():
-        user_agent = '%s/%s' % (Extension.dist_name, Extension.version)
+        user_agent = f'{Extension.dist_name}/{Extension.version}'
         assert user_agent in req.get_header('User-agent')
     if proxy_config:
         assert req.get_type() == proxy_config['scheme']

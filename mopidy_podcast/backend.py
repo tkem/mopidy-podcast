@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import contextlib
 import logging
 
@@ -21,7 +19,7 @@ class PodcastFeedCache(cachetools.TTLCache):
     pykka_traversable = True
 
     def __init__(self, config):
-        super(PodcastFeedCache, self).__init__(
+        super().__init__(
             maxsize=config[Extension.ext_name]['cache_size'],
             ttl=config[Extension.ext_name]['cache_ttl']
         )
@@ -50,7 +48,7 @@ class PodcastBackend(pykka.ThreadingActor, backend.Backend):
     ]
 
     def __init__(self, config, audio):
-        super(PodcastBackend, self).__init__()
+        super().__init__()
         self.feeds = PodcastFeedCache(config)
         self.library = PodcastLibraryProvider(config, backend=self)
         self.playback = PodcastPlaybackProvider(audio, backend=self)
