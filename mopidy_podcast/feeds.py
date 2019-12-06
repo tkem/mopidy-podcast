@@ -251,7 +251,7 @@ if __name__ == "__main__":  # pragma: no cover
     args = parser.parse_args()
 
     with contextlib.closing(urllib.request.urlopen(args.url)) as source:
-        feed = PodcastFeed.parse(source)
+        feed = parse(source)
     if args.tracks:
         result = list(feed.tracks())
     elif args.images:
