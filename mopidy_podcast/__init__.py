@@ -43,14 +43,14 @@ class Extension(ext.Extension):
 
     @classmethod
     def get_url_opener(cls, config):
-        import urllib2
+        from urllib.request import ProxyHandler, build_opener
 
         proxy = httpclient.format_proxy(config["proxy"])
         if proxy:
-            handlers = [urllib2.ProxyHandler({"http": proxy, "https": proxy})]
+            handlers = [ProxyHandler({"http": proxy, "https": proxy})]
         else:
             handlers = []
-        opener = urllib2.build_opener(*handlers)
+        opener = build_opener(*handlers)
         user_agent = f"{cls.dist_name}/{cls.version}"
         opener.addheaders = [
             ("User-agent", httpclient.format_user_agent(user_agent))

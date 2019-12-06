@@ -239,7 +239,7 @@ if __name__ == "__main__":  # pragma: no cover
     import argparse
     import contextlib
     import json
-    import urllib2
+    import urllib.request
     import sys
 
     from mopidy.models import ModelJSONEncoder
@@ -250,7 +250,7 @@ if __name__ == "__main__":  # pragma: no cover
     parser.add_argument("-t", "--tracks", action="store_true")
     args = parser.parse_args()
 
-    with contextlib.closing(urllib2.urlopen(args.url)) as source:
+    with contextlib.closing(urllib.request.urlopen(args.url)) as source:
         feed = PodcastFeed.parse(source)
     if args.tracks:
         result = list(feed.tracks())

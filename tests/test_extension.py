@@ -1,5 +1,5 @@
-import urllib2
 from unittest import mock
+from urllib.request import FileHandler, HTTPHandler, HTTPSHandler
 
 import pytest
 from mopidy_podcast import Extension, backend
@@ -30,23 +30,18 @@ def test_setup():
 @pytest.mark.parametrize(
     "url,handler,method,proxy_config",
     [
-        ("file://example.com/feed.xml", urllib2.FileHandler, "file_open", {}),
-        ("http://example.com/feed.xml", urllib2.HTTPHandler, "http_open", {}),
-        (
-            "https://example.com/feed.xml",
-            urllib2.HTTPSHandler,
-            "https_open",
-            {},
-        ),
+        ("file://example.com/feed.xml", FileHandler, "file_open", {}),
+        ("http://example.com/feed.xml", HTTPHandler, "http_open", {}),
+        ("https://example.com/feed.xml", HTTPSHandler, "https_open", {},),
         (
             "http://example.com/feed.xml",
-            urllib2.HTTPHandler,
+            HTTPHandler,
             "http_open",
             {"scheme": "http", "hostname": "localhost", "port": 9999},
         ),
         (
             "http://example.com/feed.xml",
-            urllib2.HTTPSHandler,
+            HTTPSHandler,
             "https_open",
             {"scheme": "https", "hostname": "localhost", "port": 9999},
         ),
