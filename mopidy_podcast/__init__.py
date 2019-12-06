@@ -1,8 +1,10 @@
 import pathlib
 
+import pkg_resources
+
 from mopidy import config, ext, httpclient
 
-__version__ = "2.0.3"
+__version__ = pkg_resources.get_distribution("Mopidy-Podcast").version
 
 
 class Extension(ext.Extension):
