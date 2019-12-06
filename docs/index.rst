@@ -1,5 +1,6 @@
+**************
 Mopidy-Podcast
-========================================================================
+**************
 
 Mopidy-Podcast is a Mopidy_ extension for browsing and playing
 podcasts.

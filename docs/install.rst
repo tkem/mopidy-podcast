@@ -1,5 +1,6 @@
+************
 Installation
-========================================================================
+************
 
 On Debian Linux and Debian-based distributions like Ubuntu or
 Raspbian, install the ``mopidy-podcast`` package from

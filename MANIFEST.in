@@ -1,12 +1,19 @@
-include AUTHORS
-include CHANGES.rst
+include *.py
+include *.rst
+include .mailmap
+include .readthedocs.yml
 include LICENSE
 include MANIFEST.in
-include README.rst
-include mopidy_podcast/ext.conf
+include pyproject.toml
 include tox.ini
 
-recursive-include tests *.py *.xml
+recursive-include .circleci *
+recursive-include .github *
+
+include mopidy_*/ext.conf
+
+recursive-include tests *.py
+recursive-include tests *.xml
 
 recursive-include docs *
 prune docs/_build
