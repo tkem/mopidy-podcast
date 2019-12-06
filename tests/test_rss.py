@@ -3,7 +3,7 @@ from mopidy import models
 import pytest
 from mopidy_podcast import feeds
 
-XML = b"""<?xml version="1.0" encoding="UTF-8"?>
+XML = """<?xml version="1.0" encoding="UTF-8"?>
 <rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" version="2.0">
 <channel>
 <title>All About Everything</title>
@@ -47,7 +47,7 @@ XML = b"""<?xml version="1.0" encoding="UTF-8"?>
 
 @pytest.fixture
 def rss():
-    from StringIO import StringIO
+    from io import StringIO
 
     class StringSource(StringIO):
         def geturl(self):

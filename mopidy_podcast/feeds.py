@@ -44,8 +44,8 @@ class PodcastFeed:
     def getfeeduri(cls, url):
         return uritools.uridefrag(Extension.ext_name + "+" + url).uri
 
-    def getitemuri(self, guid, safe=uritools.SUB_DELIMS + b":@/?"):
-        return self.uri + "#" + uritools.uriencode(guid, safe=safe)
+    def getitemuri(self, guid, safe=uritools.SUB_DELIMS + ":@/?"):
+        return self.uri + "#" + uritools.uriencode(guid, safe=safe).decode()
 
     def getstreamuri(self, guid):
         raise NotImplementedError

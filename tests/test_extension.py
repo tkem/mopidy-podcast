@@ -60,7 +60,7 @@ def test_get_url_opener(url, handler, method, proxy_config):
         user_agent = f"{Extension.dist_name}/{Extension.version}"
         assert user_agent in req.get_header("User-agent")
     if proxy_config:
-        assert req.get_type() == proxy_config["scheme"]
-        assert req.get_host() == "{hostname}:{port}".format(**proxy_config)
-        assert req.get_selector() == url
+        assert req.type == proxy_config["scheme"]
+        assert req.host == "{hostname}:{port}".format(**proxy_config)
+        assert req.selector == url
     assert url == req.get_full_url()

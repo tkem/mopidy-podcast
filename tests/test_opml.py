@@ -3,7 +3,7 @@ from mopidy import models
 import pytest
 from mopidy_podcast import feeds
 
-XML = b"""<?xml version="1.0" encoding="UTF-8"?>
+XML = """<?xml version="1.0" encoding="UTF-8"?>
 <opml version="2.0">
   <head>
     <title>example.opml</title>
@@ -34,7 +34,7 @@ XML = b"""<?xml version="1.0" encoding="UTF-8"?>
 
 @pytest.fixture
 def opml():
-    from StringIO import StringIO
+    from io import StringIO
 
     class StringSource(StringIO):
         def geturl(self):
