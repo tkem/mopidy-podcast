@@ -1,6 +1,6 @@
 import urllib2
+from unittest import mock
 
-import mock
 import pytest
 from mopidy_podcast import Extension, backend
 

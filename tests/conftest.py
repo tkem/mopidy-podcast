@@ -1,7 +1,7 @@
 import functools
 import os
+from unittest import mock
 
-import mock
 import mopidy_podcast as ext
 import pytest
 
