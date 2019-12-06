@@ -14,7 +14,7 @@ except ImportError:
 
 
 def parse(source):
-    if isinstance(source, basestring):
+    if isinstance(source, str):
         url = uritools.uricompose("file", "", source)
     else:
         url = source.geturl()
