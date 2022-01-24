@@ -31,8 +31,8 @@ supported for multi-level browsing.
 For more information and installation instructions, please see
 Mopidy-Podcast's online documentation_.
 
-.. _Mopidy: http://www.mopidy.com/
-.. _Documentation: http://mopidy-podcast.readthedocs.io/en/latest/
+.. _Mopidy: https://www.mopidy.com/
+.. _Documentation: https://mopidy-podcast.readthedocs.io/en/latest/
 
 
 Project Resources
@@ -44,7 +44,7 @@ Project Resources
 
 
 Credits
-=======  
+=======
 
 - Original author: `Thomas Kemmer <https://github.com/tkem>`__
 - Current maintainer: `Thomas Kemmer <https://github.com/tkem>`__

@@ -27,7 +27,7 @@ Configuration Values
    For example, this will point the *Podcasts* directory to a
    collection of all the BBC Radio and Music feeds::
 
-      browse_root = http://www.bbc.co.uk/podcasts.opml
+      browse_root = https://www.bbc.co.uk/podcasts.opml
 
    The default value is ``Podcasts.opml``, so simply exporting your
    subscribed feeds from your favorite podcast client under this name
@@ -83,4 +83,4 @@ Mopidy-Podcast release |release|:
    the Python package from PyPi_, depending on local file permissions.
 
 
-.. _PyPI: https://pypi.python.org/pypi/Mopidy-Podcast/
+.. _PyPI: https://pypi.org/project/Mopidy-Podcast/
