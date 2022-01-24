@@ -26,15 +26,15 @@ Mopidy:
   supports linking to other OPML files, both locally and on the Web,
   so this even allows creating your own *meta directory* pointing to
   podcast collections from the `BBC
-  <http://www.bbc.co.uk/podcasts.opml>`_, `gpodder.net
-  <http://gpodder.net/search.opml?q=Python>`_, and other sources::
+  <https://www.bbc.co.uk/podcasts.opml>`_, `gpodder.net
+  <https://gpodder.net/search.opml?q=Python>`_, and other sources::
 
     <?xml version="1.0" encoding="UTF-8"?>
     <opml>
       <body>
-        <outline text="TED Radio Hour" type="rss" xmlUrl="http://www.npr.org/rss/podcast.php?id=510298" />
-        <outline text="BBC Radio Podcasts" type="include" url="http://www.bbc.co.uk/podcasts.opml" />
-        <outline text="gpodder.net - Python" type="include" url="http://gpodder.net/search.opml?q=Python" />
+        <outline text="TED Radio Hour" type="rss" xmlUrl="https://www.npr.org/rss/podcast.php?id=510298" />
+        <outline text="BBC Radio Podcasts" type="include" url="https://www.bbc.co.uk/podcasts.opml" />
+        <outline text="gpodder.net - Python" type="include" url="https://gpodder.net/search.opml?q=Python" />
       </body>
     </opml>
 
@@ -42,7 +42,7 @@ Mopidy:
   browsing directly, just prefix the feed URL with ``podcast+`` to
   make sure it is not treated as an audio stream::
 
-    mpc add "podcast+http://www.npr.org/rss/podcast.php?id=510298"
+    mpc add "podcast+https://www.npr.org/rss/podcast.php?id=510298"
 
 - Last but not least, you can install `Mopidy-Podcast-iTunes`_, a
   companion extension to Mopidy-Podcast, to browse and search podcasts
@@ -59,6 +59,6 @@ Mopidy:
    license
 
 
-.. _Mopidy: http://www.mopidy.com/
+.. _Mopidy: https://www.mopidy.com/
 .. _OPML 2.0 specification: http://dev.opml.org/spec2.html
 .. _Mopidy-Podcast-iTunes: https://github.com/tkem/mopidy-podcast-itunes/
