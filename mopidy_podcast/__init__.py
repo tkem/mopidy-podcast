@@ -24,16 +24,6 @@ class Extension(ext.Extension):
         schema["cache_size"] = config.Integer(minimum=1)
         schema["cache_ttl"] = config.Integer(minimum=1)
         schema["timeout"] = config.Integer(optional=True, minimum=1)
-        # no longer used
-        schema["browse_limit"] = config.Deprecated()
-        schema["search_limit"] = config.Deprecated()
-        schema["search_details"] = config.Deprecated()
-        schema["update_interval"] = config.Deprecated()
-        schema["feeds"] = config.Deprecated()
-        schema["feeds_root_name"] = config.Deprecated()
-        schema["feeds_cache_size"] = config.Deprecated()
-        schema["feeds_cache_ttl"] = config.Deprecated()
-        schema["feeds_timeout"] = config.Deprecated()
         return schema
 
     def setup(self, registry):
