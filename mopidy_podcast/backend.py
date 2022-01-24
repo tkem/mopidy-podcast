@@ -12,10 +12,8 @@ from .playback import PodcastPlaybackProvider
 logger = logging.getLogger(__name__)
 
 
+@pykka.traversable
 class PodcastFeedCache(cachetools.TTLCache):
-
-    pykka_traversable = True
-
     def __init__(self, config):
         super().__init__(
             maxsize=config[Extension.ext_name]["cache_size"],
