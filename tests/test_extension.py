@@ -32,7 +32,12 @@ def test_setup():
     [
         ("file://example.com/feed.xml", FileHandler, "file_open", {}),
         ("http://example.com/feed.xml", HTTPHandler, "http_open", {}),
-        ("https://example.com/feed.xml", HTTPSHandler, "https_open", {},),
+        (
+            "https://example.com/feed.xml",
+            HTTPSHandler,
+            "https_open",
+            {},
+        ),
         (
             "http://example.com/feed.xml",
             HTTPHandler,
