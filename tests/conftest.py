@@ -1,5 +1,6 @@
 import functools
 import os
+from pathlib import Path
 from unittest import mock
 
 import mopidy_podcast as ext
@@ -7,8 +8,13 @@ import pytest
 
 
 @pytest.fixture
-def abspath():
-    return functools.partial(os.path.join, os.path.dirname(__file__))
+def testpath() -> Path:
+    return Path(__file__).parent
+
+
+@pytest.fixture
+def abspath(testpath: Path):
+    return functools.partial(os.path.join, str(testpath))
 
 
 @pytest.fixture
@@ -17,7 +23,7 @@ def audio():
 
 
 @pytest.fixture
-def config():
+def config(testpath: Path):
     return {
         "podcast": {
             "browse_root": "Podcasts.opml",
@@ -27,7 +33,7 @@ def config():
             "cache_ttl": 86400,
             "timeout": 10,
         },
-        "core": {"config_dir": os.path.dirname(__file__)},
+        "core": {"config_dir": testpath},
         "proxy": {},
     }
 
