@@ -13,5 +13,5 @@ Otherwise, install the Python package from PyPI_::
   pip install Mopidy-Podcast
 
 
-.. _PyPI: https://pypi.python.org/pypi/Mopidy-Podcast/
-.. _apt.mopidy.com: http://apt.mopidy.com/
+.. _PyPI: https://pypi.org/project/Mopidy-Podcast/
+.. _apt.mopidy.com: https://apt.mopidy.com/
