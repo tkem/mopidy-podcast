@@ -1,4 +1,4 @@
-v3.0.1 (UNRELEASED)
+v3.0.1 (2022-04-03)
 ===================
 
 - Officially support Python 3.9 and 3.10.
