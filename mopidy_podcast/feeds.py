@@ -1,6 +1,7 @@
 import datetime
 import email.utils
 import re
+from pathlib import Path
 
 import uritools
 from mopidy import models
@@ -14,6 +15,8 @@ except ImportError:
 
 
 def parse(source):
+    if isinstance(source, Path):
+        source = str(source)
     if isinstance(source, str):
         url = uritools.uricompose("file", "", source)
     else:
