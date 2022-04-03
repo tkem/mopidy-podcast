@@ -6,17 +6,25 @@ Mopidy-Podcast
     :target: https://pypi.org/project/Mopidy-Podcast/
     :alt: Latest PyPI version
 
-.. image:: https://img.shields.io/circleci/build/gh/tkem/mopidy-podcast
-    :target: https://circleci.com/gh/tkem/mopidy-podcast
-    :alt: CircleCI build status
+.. image:: https://img.shields.io/github/workflow/status/tkem/mopidy-podcast/CI
+    :target: https://github.com/tkem/mopidy-podcast/actions
+    :alt: CI build status
+
+.. image:: https://img.shields.io/readthedocs/mopidy-podcast
+    :target: https://mopidy-podcast.readthedocs.io/
+    :alt: Read the Docs build status
 
 .. image:: https://img.shields.io/codecov/c/gh/tkem/mopidy-podcast
     :target: https://codecov.io/gh/tkem/mopidy-podcast
     :alt: Test coverage
 
-.. image:: https://img.shields.io/readthedocs/mopidy-podcast
-    :target: https://mopidy-podcast.readthedocs.io/
-    :alt: Read the Docs build status
+.. image:: https://img.shields.io/github/license/tkem/mopidy-podcast
+   :target: https://raw.github.com/tkem/mopidy-podcast/master/LICENSE
+   :alt: License
+
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/psf/black
+   :alt: Code style: black
 
 Mopidy-Podcast is a Mopidy_ extension for browsing and playing
 podcasts.

@@ -20,7 +20,7 @@ def get_version():
 
 
 project = "Mopidy-Podcast"
-copyright = "2014-2019 Thomas Kemmer"
+copyright = "2014-2022 Thomas Kemmer"
 version = get_version()
 release = version
 

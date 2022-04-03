@@ -149,9 +149,7 @@ class RssFeed(PodcastFeed):
             return None
         else:
             return (
-                datetime.datetime.utcfromtimestamp(timestamp,)
-                .date()
-                .isoformat()
+                datetime.datetime.utcfromtimestamp(timestamp).date().isoformat()
             )
 
     @classmethod

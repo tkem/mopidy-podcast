@@ -76,13 +76,13 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             return uritools.uridefrag(uri).uri
 
         result = {}
-        for feeduri, uris in itertools.groupby(sorted(uris, key=key), key=key):
+        for feeduri, urls in itertools.groupby(sorted(uris, key=key), key=key):
             try:
                 images = dict(self.backend.feeds[feeduri].images())
             except Exception as e:
                 logger.error("Error retrieving images for %s: %s", feeduri, e)
             else:
-                result.update((uri, images.get(uri, [])) for uri in uris)
+                result.update((url, images.get(url, [])) for url in urls)
         return result
 
     def lookup(self, uri):
