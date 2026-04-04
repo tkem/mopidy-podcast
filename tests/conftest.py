@@ -3,6 +3,7 @@ import os
 from unittest import mock
 
 import mopidy_podcast as ext
+
 import pytest
 
 

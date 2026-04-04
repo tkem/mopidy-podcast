@@ -1,7 +1,8 @@
 import logging
 
-import uritools
 from mopidy import backend
+
+import uritools
 
 logger = logging.getLogger(__name__)
 

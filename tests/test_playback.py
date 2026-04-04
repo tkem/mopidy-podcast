@@ -1,5 +1,6 @@
-import pytest
 from mopidy_podcast import feeds
+
+import pytest
 
 
 @pytest.mark.parametrize("filename", ["rssfeed.xml"])

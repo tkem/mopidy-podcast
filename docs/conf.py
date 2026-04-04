@@ -1,49 +1,27 @@
-import configparser
 import pathlib
+import sys
+
+src_directory = (pathlib.Path(__file__).parent.parent / "src").resolve()
+sys.path.insert(0, str(src_directory))
 
 
-def setup(app):
-    app.add_object_type(
-        "confval",
-        "confval",
-        objname="configuration value",
-        indextemplate="pair: %s; configuration value",
-    )
-
-
+# Extract the current version from the source.
 def get_version():
-    # Get current library version without requiring the library to be
-    # installed, like ``pkg_resources.get_distribution(...).version`` requires.
-    cp = configparser.ConfigParser()
-    cp.read(pathlib.Path(__file__).parent.parent / "setup.cfg")
-    return cp["metadata"]["version"]
+    """Get the version and release from the source code."""
+
+    text = (src_directory / "mopidy_podcast/__init__.py").read_text()
+    for line in text.splitlines():
+        if not line.strip().startswith("__version__"):
+            continue
+        full_version = line.partition("=")[2].strip().strip("\"'")
+        partial_version = ".".join(full_version.split(".")[:2])
+        return full_version, partial_version
 
 
 project = "Mopidy-Podcast"
-copyright = "2014-2022 Thomas Kemmer"
-version = get_version()
-release = version
+copyright = "2014-2026 Thomas Kemmer"
+release, version = get_version()
 
 exclude_patterns = ["_build"]
 master_doc = "index"
 html_theme = "default"
-
-latex_documents = [
-    (
-        "index",
-        "Mopidy-Podcast.tex",
-        "Mopidy-Podcast Documentation",
-        "Thomas Kemmer",
-        "manual",
-    )
-]
-
-man_pages = [
-    (
-        "index",
-        "mopidy-podcast",
-        "Mopidy-Podcast Documentation",
-        ["Thomas Kemmer"],
-        1,
-    )
-]

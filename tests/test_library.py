@@ -1,5 +1,6 @@
-import pytest
 from mopidy_podcast import feeds
+
+import pytest
 
 
 def test_root_directory(library):
@@ -33,9 +34,7 @@ def test_get_images(library, filename, abspath):
     assert library.get_images(list(images)) == images
 
 
-@pytest.mark.parametrize(
-    "uris,expected", [(None, TypeError), ("podcast+file:///", {})]
-)
+@pytest.mark.parametrize("uris,expected", [(None, TypeError), ("podcast+file:///", {})])
 def test_get_images_error(library, uris, expected):
     if isinstance(expected, type):
         with pytest.raises(expected):

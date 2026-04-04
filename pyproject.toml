@@ -1,17 +1,57 @@
 [build-system]
-requires = ["setuptools >= 30.3.0", "wheel"]
+requires = ["setuptools >= 78", "setuptools-scm >= 8.2"]
+build-backend = "setuptools.build_meta"
 
+[project]
+name = "Mopidy-Podcast"
+description = "Mopidy extension for browsing and playing podcasts"
+readme = "README.rst"
+requires-python = ">= 3.7"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{name = "Thomas Kemmer", email = "tkemmer@computer.org"}]
+classifiers = [
+    "Environment :: No Input/Output (Daemon)",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Multimedia :: Sound/Audio :: Players",
+]
+dynamic = ["version"]
+dependencies = [
+    "mopidy >= 3.0.0",
+    "pykka >= 2.0.1",
+    "cachetools >= 1.0",
+    "uritools >= 1.0"
+]
 
-[tool.black]
-target-version = ["py37", "py38"]
-line-length = 80
+[project.urls]
+Homepage = "https://github.com/tkem/mopidy-podcast/"
 
+[project.entry-points."mopidy.ext"]
+internetarchive = "mopidy_podcast:Extension"
 
-[tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-line_length = 88
-known_tests = "tests"
-sections = "FUTURE,STDLIB,THIRDPARTY,FIRSTPARTY,TESTS,LOCALFOLDER"
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "mopidy_podcast.__version__"}
+
+[tool.flake8]
+max-line-length = 80
+exclude = [".git", ".tox", "build"]
+select = ["C", "E", "F", "W", "B", "B950", "I", "N"]
+# E501: line too long (black)
+ignore = ["E501"]

@@ -2,8 +2,9 @@ import datetime
 import email.utils
 import re
 
-import uritools
 from mopidy import models
+
+import uritools
 
 from . import Extension
 
@@ -148,9 +149,7 @@ class RssFeed(PodcastFeed):
         except TypeError:
             return None
         else:
-            return (
-                datetime.datetime.utcfromtimestamp(timestamp).date().isoformat()
-            )
+            return datetime.datetime.utcfromtimestamp(timestamp).date().isoformat()
 
     @classmethod
     def __genre(cls, etree):

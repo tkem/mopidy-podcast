@@ -70,7 +70,7 @@ Default Configuration
 For reference, this is the default configuration shipped with
 Mopidy-Podcast release |release|:
 
-.. literalinclude:: ../mopidy_podcast/ext.conf
+.. literalinclude:: ../src/mopidy_podcast/ext.conf
    :language: ini
 
 

@@ -2,8 +2,10 @@ import contextlib
 import logging
 
 import cachetools
-import pykka
+
 from mopidy import backend
+
+import pykka
 
 from . import Extension, feeds
 from .library import PodcastLibraryProvider

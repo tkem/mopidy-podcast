@@ -1,7 +1,8 @@
-import uritools
+from mopidy_podcast import feeds
 
 import pytest
-from mopidy_podcast import feeds
+
+import uritools
 
 
 @pytest.mark.parametrize(

@@ -1,19 +1,15 @@
-include *.py
-include *.rst
-include .mailmap
-include .readthedocs.yml
+include CHANGELOG.rst
 include LICENSE
 include MANIFEST.in
-include pyproject.toml
+include README.rst
 include tox.ini
+exclude .readthedocs.yaml
 
-recursive-include .circleci *
-recursive-include .github *
-
-include mopidy_*/ext.conf
-
-recursive-include tests *.py
-recursive-include tests *.xml
+include src/*/ext.conf
 
 recursive-include docs *
 prune docs/_build
+
+recursive-include tests *.py
+recursive-include tests *.xml
+recursive-include tests/data *

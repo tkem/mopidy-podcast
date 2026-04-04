@@ -1,10 +1,8 @@
 import pathlib
 
-import pkg_resources
-
 from mopidy import config, ext, httpclient
 
-__version__ = pkg_resources.get_distribution("Mopidy-Podcast").version
+__version__ = "3.1.0"
 
 
 class Extension(ext.Extension):
@@ -52,7 +50,5 @@ class Extension(ext.Extension):
             handlers = []
         opener = build_opener(*handlers)
         user_agent = f"{cls.dist_name}/{cls.version}"
-        opener.addheaders = [
-            ("User-agent", httpclient.format_user_agent(user_agent))
-        ]
+        opener.addheaders = [("User-agent", httpclient.format_user_agent(user_agent))]
         return opener

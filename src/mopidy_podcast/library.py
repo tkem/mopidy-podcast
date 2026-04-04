@@ -3,8 +3,9 @@ import locale
 import logging
 import os
 
-import uritools
 from mopidy import backend, models
+
+import uritools
 
 from . import Extension
 
@@ -28,9 +29,7 @@ def get_config_dir(config):
             strerror(e),
         )
     except Exception as e:
-        logger.warning(
-            "Cannot access %s config directory: %s", Extension.dist_name, e
-        )
+        logger.warning("Cannot access %s config directory: %s", Extension.dist_name, e)
     return None
 
 
