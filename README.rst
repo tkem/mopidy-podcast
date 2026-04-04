@@ -6,13 +6,13 @@ Mopidy-Podcast
     :target: https://pypi.org/project/Mopidy-Podcast/
     :alt: Latest PyPI version
 
-.. image:: https://img.shields.io/github/workflow/status/tkem/mopidy-podcast/CI
-    :target: https://github.com/tkem/mopidy-podcast/actions
-    :alt: CI build status
+.. image:: https://img.shields.io/github/actions/workflow/status/tkem/mopidy-podcast/ci.yml
+   :target: https://github.com/tkem/mopidy-podcast/actions/workflows/ci.yml
+   :alt: CI build status
 
 .. image:: https://img.shields.io/readthedocs/mopidy-podcast
     :target: https://mopidy-podcast.readthedocs.io/
-    :alt: Read the Docs build status
+    :alt: Documentation build status
 
 .. image:: https://img.shields.io/codecov/c/gh/tkem/mopidy-podcast
     :target: https://codecov.io/gh/tkem/mopidy-podcast
