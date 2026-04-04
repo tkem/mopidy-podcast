@@ -1,3 +1,13 @@
+v3.1.0 (UNRELEASED)
+===================
+
+- Add support for Python <= 3.14.
+
+- Modernize build environment and packages structure.
+
+- Update CI environment.
+
+
 v3.0.1 (2022-04-03)
 ===================
 
