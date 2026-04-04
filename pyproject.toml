@@ -38,7 +38,7 @@ dependencies = [
 Homepage = "https://github.com/tkem/mopidy-podcast/"
 
 [project.entry-points."mopidy.ext"]
-internetarchive = "mopidy_podcast:Extension"
+podcast = "mopidy_podcast:Extension"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
