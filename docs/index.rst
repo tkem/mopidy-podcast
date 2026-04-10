@@ -19,9 +19,8 @@ Mopidy:
 
 - If you are already using a podcasting client, chances are that it
   supports exporting your subscribed feeds as an OPML file.  Simply
-  store this file in the location pointed to by
-  :confval:`podcast/browse_root` to access your favorite podcasts from
-  Mopidy.
+  store this file in the location pointed to by :confval:`browse_root`
+  to access your favorite podcasts from Mopidy.
 
 - Since OPML is a simple XML format, it is also feasible to create
   your own, using an XML or text editor of your choice. OPML also
@@ -66,11 +65,11 @@ only a few modifications, if any, to match personal preferences.
 Configuration Values
 ====================
 
-.. confval:: podcast/enabled
+.. confval:: enabled
 
    Whether this extension should be enabled or not.
 
-.. confval:: podcast/browse_root
+.. confval:: browse_root
 
    A local path or URL pointing to an OPML syndication feed to use as
    the root for browsing the *Podcasts* directory in Mopidy.  Relative
@@ -90,27 +89,27 @@ Configuration Values
    If set to an empty string, the *Podcasts* directory will be hidden
    when browsing Mopidy.
 
-.. confval:: podcast/browse_order
+.. confval:: browse_order
 
    Whether to sort podcast episodes by ascending (``asc``) or
    descending (``desc``) publication date for browsing.
 
-.. confval:: podcast/lookup_order
+.. confval:: lookup_order
 
    Whether to sort podcast episodes by ascending (``asc``) or
    descending (``desc``) publication date for lookup, for example when
    adding a podcast to Mopidy's tracklist.
 
-.. confval:: podcast/cache_size
+.. confval:: cache_size
 
    The maximum number of podcast feeds that will be cached in memory.
 
-.. confval:: podcast/cache_ttl
+.. confval:: cache_ttl
 
    The cache's *time to live*, i.e. the number of seconds after which
    a cached feed expires and needs to be reloaded.
 
-.. confval:: podcast/timeout
+.. confval:: timeout
 
    The HTTP request timeout when retrieving podcast feeds, in seconds.
 
