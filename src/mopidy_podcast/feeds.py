@@ -62,7 +62,6 @@ class PodcastFeed:
 
 
 class RssFeed(PodcastFeed):
-
     ITUNES_PREFIX = "{http://www.itunes.com/dtds/podcast-1.0.dtd}"
 
     DURATION_RE = re.compile(
@@ -198,7 +197,6 @@ class RssFeed(PodcastFeed):
 
 
 class OpmlFeed(PodcastFeed):  # not really a "feed"
-
     TYPES = {
         "include": lambda e: models.Ref.directory(
             name=e.get("text"), uri=PodcastFeed.getfeeduri(get_url(e))

@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 class PodcastFeedCache(cachetools.TTLCache):
-
     pykka_traversable = True
 
     def __init__(self, config):
@@ -39,7 +38,6 @@ class PodcastFeedCache(cachetools.TTLCache):
 
 
 class PodcastBackend(pykka.ThreadingActor, backend.Backend):
-
     uri_schemes = ["podcast", "podcast+file", "podcast+http", "podcast+https"]
 
     def __init__(self, config, audio):
