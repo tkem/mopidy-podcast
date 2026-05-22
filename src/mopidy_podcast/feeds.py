@@ -142,13 +142,13 @@ class RssFeed(PodcastFeed):
     def __date(cls, etree):
         text = etree.findtext("pubDate")
         try:
-            timestamp = email.utils.mktime_tz(email.utils.parsedate_tz(text))
+            t = email.utils.mktime_tz(email.utils.parsedate_tz(text))
         except AttributeError:
             return None
         except TypeError:
             return None
         else:
-            return datetime.datetime.utcfromtimestamp(timestamp).date().isoformat()
+            return datetime.datetime.fromtimestamp(t, datetime.UTC).date().isoformat()
 
     @classmethod
     def __genre(cls, etree):
