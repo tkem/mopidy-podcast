@@ -1,47 +1,54 @@
 [build-system]
-requires = ["setuptools >= 78", "setuptools-scm >= 8.2"]
+requires = ["setuptools >= 80", "setuptools-scm >= 8.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "Mopidy-Podcast"
 description = "Mopidy extension for browsing and playing podcasts"
+authors = [
+    {name = "Thomas Kemmer", email = "tkemmer@computer.org"}
+]
+maintainers = [
+    {name = "Thomas Kemmer", email = "tkemmer@computer.org"}
+]
 readme = "README.rst"
-requires-python = ">= 3.7"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
-authors = [{name = "Thomas Kemmer", email = "tkemmer@computer.org"}]
+requires-python = ">= 3.13"
 classifiers = [
     "Environment :: No Input/Output (Daemon)",
     "Intended Audience :: End Users/Desktop",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Multimedia :: Sound/Audio :: Players",
 ]
-dynamic = ["version"]
 dependencies = [
-    "mopidy >= 3.0.0",
-    "pykka >= 2.0.1",
-    "cachetools >= 1.0",
-    "uritools >= 1.0"
+    "cachetools >= 5.3.3",
+    "mopidy >= 4.0.0",
+    "pykka >= 4.1",
+    "uritools >= 4.0.3",
 ]
-
-[project.urls]
-Homepage = "https://github.com/tkem/mopidy-podcast/"
+dynamic = ["version"]
 
 [project.entry-points."mopidy.ext"]
 podcast = "mopidy_podcast:Extension"
 
+[project.urls]
+Homepage = "https://github.com/tkem/mopidy-podcast/"
+Documentation = "https://mopidy-podcast.readthedocs.io/en/stable/"
+Source = "https://github.com/tkem/mopidy-podcast/"
+Repository = "https://github.com/tkem/mopidy-podcast/"
+Issues = "https://github.com/tkem/mopidy-podcast/issues"
+Changelog = "https://github.com/tkem/mopidy-podcast/blob/master/CHANGELOG.rst"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+"*" = ["*.conf"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -49,9 +56,8 @@ where = ["src"]
 [tool.setuptools.dynamic]
 version = {attr = "mopidy_podcast.__version__"}
 
-[tool.flake8]
-max-line-length = 80
-exclude = [".git", ".tox", "build"]
-select = ["C", "E", "F", "W", "B", "B950", "I", "N"]
-# E501: line too long (black)
-ignore = ["E501"]
+[tool.pyright]
+typeCheckingMode = "standard"
+#reportFunctionMemberAccess = false
+#reportOptionalContextManager = false
+#reportOptionalMemberAccess = false
