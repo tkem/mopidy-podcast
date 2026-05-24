@@ -2,7 +2,7 @@ import pathlib
 
 from mopidy import config, ext, httpclient
 
-__version__ = "3.1.1"
+__version__ = "4.0.0"
 
 
 class Extension(ext.Extension):
