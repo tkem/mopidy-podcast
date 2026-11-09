@@ -6,6 +6,7 @@ from unittest import mock
 import pytest
 
 import mopidy_podcast as ext
+import mopidy_podcast.backend
 
 
 @pytest.fixture
