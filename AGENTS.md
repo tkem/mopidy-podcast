@@ -20,6 +20,8 @@ tox -e pyright                               # not in envlist yet: still fails
 
 Installing Mopidy builds PyGObject, which needs the GObject introspection and cairo
 headers (`libgirepository-2.0-dev`, `libcairo2-dev`, `pkg-config` on Debian/Ubuntu).
+Alternatively, install the distribution's `python3-gi` and `python3-cairo` and run
+tox with `VIRTUALENV_SYSTEM_SITE_PACKAGES=true` on a system Python ≥ 3.13.
 CI (GitHub Actions on `tkem/mopidy-podcast`, every push) runs CPython 3.13 and 3.14
 inside the `ghcr.io/mopidy/ci` container; without `gh`, check runs via
 `https://api.github.com/repos/tkem/mopidy-podcast/actions/runs?branch=<branch>`.
