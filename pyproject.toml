@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Mopidy-Podcast"
+dynamic = ["version"]
 description = "Mopidy extension for browsing and playing podcasts"
 authors = [
     {name = "Thomas Kemmer", email = "tkemmer@computer.org"}
@@ -31,7 +32,6 @@ dependencies = [
     "pykka >= 4.1",
     "uritools >= 4.0.3",
 ]
-dynamic = ["version"]
 
 [project.entry-points."mopidy.ext"]
 podcast = "mopidy_podcast:Extension"
