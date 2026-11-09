@@ -64,10 +64,10 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         try:
             feed = self.backend.feeds[uri]
         except Exception as e:
-            logger.error("Error retrieving %s: %s", uri, e)  # TODO: raise?
+            logger.error("Error retrieving %s: %s", uri, e)
         else:
             return list(feed.items(self.__browse_order == "desc"))
-        return []  # FIXME: hide errors from clients
+        return []
 
     def get_images(self, uris):
         def key(uri):
@@ -94,10 +94,10 @@ class PodcastLibraryProvider(backend.LibraryProvider):
         try:
             feed = self.backend.feeds[uritools.uridefrag(uri).uri]
         except Exception as e:
-            logger.error("Error retrieving %s: %s", uri, e)  # TODO: raise?
+            logger.error("Error retrieving %s: %s", uri, e)
         else:
             return self.__lookup(feed, uri)
-        return []  # FIXME: hide errors from clients
+        return []
 
     def refresh(self, uri=None):
         if uri:
@@ -114,6 +114,7 @@ class PodcastLibraryProvider(backend.LibraryProvider):
             try:
                 track = tracks.pop(uri)
             except KeyError:
-                logger.warning("No such track: %s", uri)  # TODO: raise?
+                logger.warning("No such track: %s", uri)
+                return []
             else:
                 return [track]
