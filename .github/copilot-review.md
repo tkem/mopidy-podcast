@@ -31,12 +31,6 @@ pyright` fails with 48 errors (Code #4). **Coverage:** 88 % with branches; gaps 
 | 3 | Info | `itunes:duration` values with hours or only seconds, missing or malformed `pubDate`, and items without `<guid>` but with an enclosure are covered only partly by `tests/rssfeed.xml`. |
 | 4 | Info | Two `DeprecationWarning`s ("Use ReleaseDate instead") come from `mopidy.types` at import time, not from this package. |
 
-## Docs (`docs/index.rst`)
-
-| # | Priority | Finding |
-|---|----------|---------|
-| 1 | Info | `README.rst` still shows a "code style: black" badge, although formatting is done with `ruff format`. |
-
 ## Changelog
 
 | # | Priority | Finding |
