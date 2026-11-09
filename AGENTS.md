@@ -36,7 +36,7 @@ Coverage is reported to Codecov and is not complete; see `.github/copilot-review
   internals private and expose behavior through the Mopidy provider API only.
 - Log with `logger.error("... %s", arg)`, never f-strings, and never raise from
   `browse()`, `lookup()`, `get_images()` or `translate_uri()`: Mopidy clients expect
-  an empty result instead (see the `FIXME` comments).
+  an empty result instead.
 - Docs (`docs/index.rst`): wrap prose at column 70, two spaces after a sentence,
   `confval` entries for every setting in `ext.conf`. Keep `README.rst` in sync.
 

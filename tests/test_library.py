@@ -62,6 +62,12 @@ def test_lookup_error(library, uri, expected):
 
 
 @pytest.mark.parametrize("filename", ["rssfeed.xml"])
+def test_lookup_unknown_guid(library, filename, abspath):
+    feed = feeds.parse(abspath(filename))
+    assert library.lookup(feed.uri + "#unknown") == []
+
+
+@pytest.mark.parametrize("filename", ["rssfeed.xml"])
 def test_refresh(library, filename, abspath):
     feed = feeds.parse(abspath(filename))
     tracks = library.lookup(feed.uri)
