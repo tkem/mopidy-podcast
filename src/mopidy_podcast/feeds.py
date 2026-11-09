@@ -2,17 +2,12 @@ import datetime
 import email.utils
 import re
 from pathlib import Path
-
-from mopidy import models
+from xml.etree import ElementTree
 
 import uritools
+from mopidy import models
 
 from . import Extension
-
-try:
-    import xml.etree.cElementTree as ElementTree
-except ImportError:
-    import xml.etree.ElementTree as ElementTree
 
 
 def parse(source):
@@ -82,7 +77,7 @@ class RssFeed(PodcastFeed):
         super().__init__(url)
         self.__channel = channel = root.find("channel")
         items = channel.findall("./item/enclosure[@url]/..")
-        self.__items = list(sorted(items, key=self.__order))
+        self.__items = sorted(items, key=self.__order)
 
     def getstreamuri(self, guid):
         for item in self.__items:
@@ -237,8 +232,8 @@ if __name__ == "__main__":  # pragma: no cover
     import argparse
     import contextlib
     import json
-    import urllib.request
     import sys
+    import urllib.request
 
     from mopidy.models import ModelJSONEncoder
 

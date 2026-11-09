@@ -1,10 +1,9 @@
 from pathlib import Path
 
-from mopidy_podcast import feeds
-
 import pytest
-
 import uritools
+
+from mopidy_podcast import feeds
 
 
 @pytest.mark.parametrize(

@@ -3,9 +3,9 @@ import os
 from pathlib import Path
 from unittest import mock
 
-import mopidy_podcast as ext
-
 import pytest
+
+import mopidy_podcast as ext
 
 
 @pytest.fixture
