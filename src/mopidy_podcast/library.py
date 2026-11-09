@@ -3,9 +3,8 @@ import locale
 import logging
 import os
 
-from mopidy import backend, models
-
 import uritools
+from mopidy import backend, models
 
 from . import Extension
 

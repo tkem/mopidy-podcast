@@ -1,9 +1,9 @@
 from unittest import mock
 from urllib.request import FileHandler, HTTPHandler, HTTPSHandler
 
-from mopidy_podcast import Extension, backend
-
 import pytest
+
+from mopidy_podcast import Extension, backend
 
 
 def test_get_default_config():

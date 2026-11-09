@@ -1,6 +1,6 @@
-from mopidy_podcast import feeds
-
 import pytest
+
+from mopidy_podcast import feeds
 
 
 def test_root_directory(library):

@@ -58,6 +58,7 @@ version = {attr = "mopidy_podcast.__version__"}
 
 [tool.pyright]
 typeCheckingMode = "standard"
-#reportFunctionMemberAccess = false
-#reportOptionalContextManager = false
-#reportOptionalMemberAccess = false
+reportUnnecessaryTypeIgnoreComment = "error"
+
+[tool.ruff.lint]
+ignore = ["BLE001", "RUF012", "S110"]
