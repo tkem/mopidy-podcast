@@ -38,6 +38,7 @@ review process.
 
 - Library and playback providers log errors and return empty results instead of
   raising (`BLE001` is ignored for this reason); clients must not see exceptions.
+  This is settled, so the code no longer carries `TODO`/`FIXME` comments about it.
 - Local (`file:`) feeds are never cached, so edits show up without `refresh()`.
 - The code carries no type annotations; pyright runs in `standard` mode and is not
   part of the default `tox` envlist until its errors are fixed.
